@@ -1,4 +1,6 @@
-package com.client.gti785_lab2;
+package com.client.activities;
+
+import com.client.gti785_lab2.R;
 
 import android.app.Activity;
 import android.app.ActionBar;

@@ -43,14 +43,14 @@ public class MyServerQRInfo {
 
 			BitMatrix byteMatrix = qrCodeWriter.encode("MonServeur ,"+ getAddress() +","+ port,BarcodeFormat.QR_CODE, 125, 125, hintMap);
 			
-			//Comme c un carré on peut juste la longueur
-			int CrunchifyWidth = byteMatrix.getWidth();
+			//Comme c un carré on peut juste utiliser la longueur
+			int qrCodeWidth = byteMatrix.getWidth();
 
-			int[] pixels = new int[CrunchifyWidth * CrunchifyWidth];
+			int[] pixels = new int[qrCodeWidth * qrCodeWidth];
 			// All are 0, or black, by default
-			for (int y = 0; y < CrunchifyWidth; y++) {
-				int offset = y * CrunchifyWidth;
-				for (int x = 0; x <CrunchifyWidth; x++) {
+			for (int y = 0; y < qrCodeWidth; y++) {
+				int offset = y * qrCodeWidth;
+				for (int x = 0; x <qrCodeWidth; x++) {
 					if(byteMatrix.get(x, y)== true)
 					{
 						pixels[offset + x] = BLACK ;
@@ -59,8 +59,8 @@ public class MyServerQRInfo {
 						pixels[offset + x] = WHITE ;
 				}
 			}
-			Bitmap bitmap = Bitmap.createBitmap(CrunchifyWidth, CrunchifyWidth, Bitmap.Config.ARGB_8888);
-			bitmap.setPixels(pixels, 0, CrunchifyWidth, 0, 0, CrunchifyWidth, CrunchifyWidth);
+			Bitmap bitmap = Bitmap.createBitmap(qrCodeWidth, qrCodeWidth, Bitmap.Config.ARGB_8888);
+			bitmap.setPixels(pixels, 0, qrCodeWidth, 0, 0, qrCodeWidth, qrCodeWidth);
 			
 			return bitmap;
 			
