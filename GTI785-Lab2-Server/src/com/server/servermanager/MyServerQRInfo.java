@@ -34,6 +34,10 @@ public class MyServerQRInfo {
 	}
 
 
+	/**
+	 * generate an image of the server information and draw a qr code
+	 * @return
+	 */
 	public Bitmap generateQRCode(){
 		try {
 			Hashtable<EncodeHintType, ErrorCorrectionLevel> hintMap = new Hashtable<EncodeHintType, ErrorCorrectionLevel>();
@@ -41,7 +45,7 @@ public class MyServerQRInfo {
 
 			QRCodeWriter qrCodeWriter = new QRCodeWriter();
 
-			BitMatrix byteMatrix = qrCodeWriter.encode("MonServeur ,"+ getAddress() +","+ port,BarcodeFormat.QR_CODE, 125, 125, hintMap);
+			BitMatrix byteMatrix = qrCodeWriter.encode( getAddress() +","+ port+ ", MonServeur",BarcodeFormat.QR_CODE, 750, 750, hintMap);
 			
 			//Comme c un carré on peut juste utiliser la longueur
 			int qrCodeWidth = byteMatrix.getWidth();

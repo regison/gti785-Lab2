@@ -1,6 +1,13 @@
 package com.client.activities;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Logger;
+
 import com.client.gti785_lab2.R;
+import com.client.servermanager.ServerAdapter;
+import com.client.servermanager.ServerManager;
+import com.client.servermanager.ServerObject;
 
 import android.app.Activity;
 import android.app.ActionBar;
@@ -8,25 +15,34 @@ import android.app.Fragment;
 import android.app.FragmentManager;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.os.Build;
+import android.location.Criteria;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
+import android.net.Uri;
 import android.os.Bundle;
-import android.provider.MediaStore;
-import android.view.Gravity;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.support.v4.widget.DrawerLayout;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.EditText;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+
+
 public class MainActivity extends Activity implements
 		NavigationDrawerFragment.NavigationDrawerCallbacks {
-
+	private static final Logger LOG = Logger.getLogger(MainActivity.class.getName());
 	/**
 	 * Fragment managing the behaviors, interactions and presentation of the
 	 * navigation drawer.
@@ -39,14 +55,15 @@ public class MainActivity extends Activity implements
 	 */
 	private CharSequence mTitle;
 
+	private int sectionId;
+	
+	private static ListView generalListView;
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.activity_main);
-		dispatchTakePictureIntent();
-
-		//if (!getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA_ANY))
-			
+		setContentView(R.layout.activity_main);		
+				
 		mNavigationDrawerFragment = (NavigationDrawerFragment) getFragmentManager()
 				.findFragmentById(R.id.navigation_drawer);
 		mTitle = getTitle();
@@ -54,12 +71,14 @@ public class MainActivity extends Activity implements
 		// Set up the drawer.
 		mNavigationDrawerFragment.setUp(R.id.navigation_drawer,
 				(DrawerLayout) findViewById(R.id.drawer_layout));
+		
+		
 	}
 
 	static final int REQUEST_IMAGE_CAPTURE = 1;
 
-	//Need to add in a button event
 	private void dispatchTakePictureIntent() {
+				
 	    Intent takePictureIntent = new Intent("com.google.zxing.client.android.SCAN");
 
 	    takePictureIntent.putExtra("SCAN_MODE", "QR_CODE_MODE");
@@ -74,6 +93,8 @@ public class MainActivity extends Activity implements
 				String contents = intent.getStringExtra("SCAN_RESULT");
 				String format = intent.getStringExtra("SCAN_RESULT_FORMAT");
 				Toast.makeText(this, contents,Toast.LENGTH_LONG).show();
+				
+				 ServerManager.getInstance().addServerFromCode(contents);
 				// Handle successful scan
 			} 
 			else if (resultCode == RESULT_CANCELED) {
@@ -92,9 +113,10 @@ public class MainActivity extends Activity implements
 	}
 
 	public void onSectionAttached(int number) {
+		sectionId = number;
 		switch (number) {
 		case 1:
-			mTitle = getString(R.string.title_section1);
+			mTitle = getString(R.string.title_section1);			
 			break;
 		case 2:
 			mTitle = getString(R.string.title_section2);
@@ -119,7 +141,19 @@ public class MainActivity extends Activity implements
 			// if the drawer is not showing. Otherwise, let the drawer
 			// decide what to show in the action bar.
 			getMenuInflater().inflate(R.menu.main, menu);
+			
 			restoreActionBar();
+			//show add server button on the view for add server
+			if (sectionId == 1){
+				final Button btn = (Button) findViewById(R.id.add_server);
+				btn.setOnClickListener(new OnClickListener() {
+		            public void onClick(View v) {
+		                // Perform action on click
+		            	dispatchTakePictureIntent();
+		            }
+		        });
+			}
+			
 			return true;
 		}
 		return super.onCreateOptionsMenu(menu);
@@ -140,7 +174,7 @@ public class MainActivity extends Activity implements
 	/**
 	 * A placeholder fragment containing a simple view.
 	 */
-	public static class PlaceholderFragment extends Fragment {
+	public static class PlaceholderFragment extends Fragment  {
 		/**
 		 * The fragment argument representing the section number for this
 		 * fragment.
@@ -150,7 +184,12 @@ public class MainActivity extends Activity implements
 		/**
 		 * Returns a new instance of this fragment for the given section number.
 		 */
+		static int section = 0;
+		TextView  pos = null; 
+		Location instantLocation = null;
+		
 		public static PlaceholderFragment newInstance(int sectionNumber) {
+			section = sectionNumber;
 			PlaceholderFragment fragment = new PlaceholderFragment();
 			Bundle args = new Bundle();
 			args.putInt(ARG_SECTION_NUMBER, sectionNumber);
@@ -164,8 +203,93 @@ public class MainActivity extends Activity implements
 		@Override
 		public View onCreateView(LayoutInflater inflater, ViewGroup container,
 				Bundle savedInstanceState) {
-			View rootView = inflater.inflate(R.layout.fragment_main, container,
-					false);
+			View rootView = null ;
+			
+			switch (section){
+			case 1:
+				rootView = inflater.inflate(R.layout.fragment_servers, container,
+						false);		
+				
+				ArrayList<ServerObject> srvs =  ServerManager.getInstance().getServers();
+				
+				MainActivity.LOG.info("Servers available:" + srvs.size());
+				
+				ServerAdapter adapter = new ServerAdapter(rootView.getContext(),
+						                                  ServerManager.getInstance().getServers());
+				
+				generalListView = (ListView) rootView.findViewById(R.id.serversView);
+				generalListView.setAdapter(adapter);
+				
+				generalListView.setOnItemClickListener(new OnItemClickListener() {
+
+					@Override
+					public void onItemClick(AdapterView<?> parent, View view,
+							int position, long id) {
+						// TODO Auto-generated method stub
+						Log.d("Item clicked", generalListView.getAdapter().getItem(position) + " has been selected!");
+					}
+				});
+				
+				break;
+			case 2:
+				rootView = inflater.inflate(R.layout.fragment_files, container,
+						false);				
+				break;
+			case 3:
+				rootView = inflater.inflate(R.layout.fragment_phone_position, container,
+						false);		
+				
+				// Don't initialize location manager, retrieve it from system services.
+				LocationManager locationManager = (LocationManager) getActivity()
+				        .getSystemService(Context.LOCATION_SERVICE);
+				 
+				instantLocation = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+				
+				pos = (TextView) rootView.findViewById(R.id.phoneLocation);
+				
+				LocationListener locationListener = new LocationListener() {
+				 
+					
+				    @Override
+				    public void onStatusChanged(String provider, int status, Bundle extras) {
+				    }
+				 
+				    @Override
+				    public void onProviderEnabled(String provider) {
+				        Toast.makeText(getActivity(),
+				                "Provider enabled: " + provider, Toast.LENGTH_SHORT)
+				                .show();
+				    }
+				 
+				    @Override
+				    public void onProviderDisabled(String provider) {
+				        Toast.makeText(getActivity(),
+				                "Provider disabled: " + provider, Toast.LENGTH_SHORT)
+				                .show();
+				    }
+				 
+				    @Override
+				    public void onLocationChanged(Location location) {
+				        // Do work with new location. Implementation of this method will be covered later.
+				        doWorkWithNewLocation(location);
+				    }
+				};
+				 
+				long minTime = 5 * 1000; // Minimum time interval for update in seconds, i.e. 5 seconds.
+				long minDistance = 10; // Minimum distance change for update in meters, i.e. 10 meters.
+				 
+				// Assign LocationListener to LocationManager in order to receive location updates.
+				// Acquiring provider that is used for location updates will also be covered later.
+				// Instead of LocationListener, PendingIntent can be assigned, also instead of 
+				// provider name, criteria can be used, but we won't use those approaches now.
+				locationManager.requestLocationUpdates(getProviderName(), minTime,
+				        minDistance, locationListener);		
+				doWorkWithNewLocation(instantLocation);
+				
+				//MapView mapView = (MapView) rootView.findViewById(R.id.map_view);
+				break;
+			}			
+			
 			return rootView;
 		}
 
@@ -174,6 +298,102 @@ public class MainActivity extends Activity implements
 			super.onAttach(activity);
 			((MainActivity) activity).onSectionAttached(getArguments().getInt(
 					ARG_SECTION_NUMBER));
+		}
+
+		
+		/**
+		 * Get provider name.
+		 * @return Name of best suiting provider.
+		 * */
+		String getProviderName() {
+		    LocationManager locationManager = (LocationManager) getActivity()
+		            .getSystemService(Context.LOCATION_SERVICE);
+		 
+		    Criteria criteria = new Criteria();
+		    criteria.setPowerRequirement(Criteria.POWER_LOW); // Chose your desired power consumption level.
+		    criteria.setAccuracy(Criteria.ACCURACY_FINE); // Choose your accuracy requirement.
+		    criteria.setSpeedRequired(true); // Chose if speed for first location fix is required.
+		    criteria.setAltitudeRequired(false); // Choose if you use altitude.
+		    criteria.setBearingRequired(false); // Choose if you use bearing.
+		    criteria.setCostAllowed(false); // Choose if this provider can waste money :-)
+		 
+		    // Provide your criteria and flag enabledOnly that tells
+		    // LocationManager only to return active providers.
+		    return locationManager.getBestProvider(criteria, true);
+		}
+		/**
+		* Make use of location after deciding if it is better than previous one.
+		*
+		* @param location Newly acquired location.
+		*/
+		void doWorkWithNewLocation(Location location) {
+		    if(isBetterLocation(instantLocation, location)) {
+		        // If location is better, do some user preview.
+		        Toast.makeText(getActivity(),
+		                        "Better location found: " + getProviderName(), Toast.LENGTH_SHORT)
+		                        .show();				
+		    }
+		    
+		    String lat = String.valueOf(instantLocation.getLatitude());
+		    String lon = String.valueOf(instantLocation.getLongitude());
+		    Log.e("GPS", "location changed: lat="+lat+", lon="+lon);	    
+		    
+		    pos.setText("Latitude: "+ (double) Math.round(instantLocation.getLatitude() *10000) / 10000 + " Longitude: "+ (double) Math.round(instantLocation.getLongitude() * 10000) / 10000);
+		    
+		    String label = "Current location";
+		    String uriBegin = "geo:" + lat + "," + lon;
+		    String query = lat + "," + lon + "(" + label + ")";
+		    String encodedQuery = Uri.encode(query);
+		    String uriString = uriBegin + "?q=" + encodedQuery + "&z=16";
+		    Uri uri = Uri.parse(uriString);
+		    
+		    Intent mapIntent = new Intent(Intent.ACTION_VIEW, uri);
+		  
+		    startActivity(mapIntent);
+		 
+		
+		}
+		 
+		/**
+		* Time difference threshold set for one minute.
+		*/
+		static final int TIME_DIFFERENCE_THRESHOLD = 1 * 60 * 1000;
+		 
+		/**
+		* Decide if new location is better than older by following some basic criteria.
+		* This algorithm can be as simple or complicated as your needs dictate it.
+		* Try experimenting and get your best location strategy algorithm.
+		* 
+		* @param oldLocation Old location used for comparison.
+		* @param newLocation Newly acquired location compared to old one.
+		* @return If new location is more accurate and suits your criteria more than the old one.
+		*/
+		boolean isBetterLocation(Location oldLocation, Location newLocation) {
+		    // If there is no old location, of course the new location is better.
+		    if(oldLocation == null) {
+		        return true;
+		    }
+		 
+		    // Check if new location is newer in time.
+		    boolean isNewer = newLocation.getTime() > oldLocation.getTime();
+		 
+		    // Check if new location more accurate. Accuracy is radius in meters, so less is better.
+		    boolean isMoreAccurate = newLocation.getAccuracy() < oldLocation.getAccuracy();       
+		    if(isMoreAccurate && isNewer) {         
+		        // More accurate and newer is always better.         
+		        return true;     
+		    } else if(isMoreAccurate && !isNewer) {         
+		        // More accurate but not newer can lead to bad fix because of user movement.         
+		        // Let us set a threshold for the maximum tolerance of time difference.         
+		        long timeDifference = newLocation.getTime() - oldLocation.getTime(); 
+		 
+		        // If time difference is not greater then allowed threshold we accept it.         
+		        if(timeDifference > -TIME_DIFFERENCE_THRESHOLD) {
+		            return true;
+		        }
+		    }
+		 
+		    return false;
 		}
 	}
 

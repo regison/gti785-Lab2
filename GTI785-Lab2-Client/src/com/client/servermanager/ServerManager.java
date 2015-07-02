@@ -3,6 +3,8 @@ package com.client.servermanager;
 import java.util.ArrayList;
 import java.util.StringTokenizer;
 
+import android.location.Location;
+
 import com.client.asynctasks.LongPollingTask;
 
 public class ServerManager  {
@@ -26,7 +28,7 @@ public class ServerManager  {
 	
 	public void addServerFromCode(String qrCodeString){
 		
-		String [] token =  qrCodeString.split(";");
+		String [] token =  qrCodeString.split(",");
 		
 		//The tokens should be 
 		//token[0] = ip
@@ -45,7 +47,7 @@ public class ServerManager  {
 			
 			servers.add( servertoAddtoList );
 			
-			new LongPollingTask().execute(servertoAddtoList);
+			//new LongPollingTask().execute(servertoAddtoList);
 		}
 		
 	}
@@ -54,4 +56,13 @@ public class ServerManager  {
 		return servers;
 	}
 	
+	public Location getServerLocation(int position){
+		return  getServers().get(position).getServerLocation();
+	}
+	
+	public void setLocation(int serverPos){
+		
+		
+		
+	}
 }

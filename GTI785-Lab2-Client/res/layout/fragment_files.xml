@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" >
+    
+     <ListView
+         android:id="@+id/filesView"
+         android:layout_width="fill_parent"
+         android:layout_height="fill_parent"
+         android:layout_alignParentBottom="true"
+         android:layout_below="@+id/phoneLocation" >
+
+    </ListView>
+
+     <EditText
+         android:id="@+id/phoneLocation"
+         android:layout_width="wrap_content"
+         android:layout_height="wrap_content"
+         android:layout_alignParentStart="true"
+         android:ems="10"
+         android:text="@string/listefichiers" >
+         
+         <requestFocus />
+     </EditText>
+
+     <TextView
+         android:id="@+id/textServerName"
+         android:layout_width="wrap_content"
+         android:layout_height="wrap_content"
+         android:layout_alignBaseline="@+id/phoneLocation"
+         android:layout_alignBottom="@+id/phoneLocation"
+         android:layout_toEndOf="@+id/phoneLocation"
+         android:textAppearance="?android:attr/textAppearanceMedium" />
+
+</RelativeLayout>

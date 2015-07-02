@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_name">GTI785-Lab2</string>
+    <string name="app_name">Lab 2 : mobile file server</string>
     <string name="title_section1">Serveurs</string>
     <string name="title_section2">Fichiers</string>
     <string name="title_section3">Position</string>
@@ -9,5 +9,8 @@
     <string name="navigation_drawer_close">Close navigation drawer</string>
     <string name="action_example">Example action</string>
     <string name="action_settings">Settings</string>
+    <string name="add_server_btn">Ajouter un serveur</string>
+    <string name="listefichiers">Liste de fichiers pour</string>
+    <string name="currentLocation">Dernière position de votre appareil</string>
 
 </resources>

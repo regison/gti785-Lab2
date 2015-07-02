@@ -17,9 +17,11 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.ListView;
 import android.widget.Toast;
 
@@ -30,7 +32,7 @@ import android.widget.Toast;
  * > design guidelines</a> for a complete explanation of the behaviors
  * implemented here.
  */
-public class NavigationDrawerFragment extends Fragment {
+public class NavigationDrawerFragment extends Fragment implements OnClickListener {
 
 	/**
 	 * Remember the position of the selected item.
@@ -95,7 +97,7 @@ public class NavigationDrawerFragment extends Fragment {
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
-			Bundle savedInstanceState) {
+			Bundle savedInstanceState) {		
 		mDrawerListView = (ListView) inflater.inflate(
 				R.layout.fragment_navigation_drawer, container, false);
 		mDrawerListView
@@ -133,6 +135,8 @@ public class NavigationDrawerFragment extends Fragment {
 	 */
 	public void setUp(int fragmentId, DrawerLayout drawerLayout) {
 		mFragmentContainerView = getActivity().findViewById(fragmentId);
+		
+		
 		mDrawerLayout = drawerLayout;
 
 		// set a custom shadow that overlays the main content when the drawer
@@ -307,5 +311,11 @@ public class NavigationDrawerFragment extends Fragment {
 		 * Called when an item in the navigation drawer is selected.
 		 */
 		void onNavigationDrawerItemSelected(int position);
+	}
+
+	@Override
+	public void onClick(View v) {
+		// TODO Auto-generated method stub
+		
 	}
 }
