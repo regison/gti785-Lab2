@@ -1,25 +1,77 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical" >
-    
-  <TextView   
-     android:id="@+id/serverName"   
-     android:layout_width="fill_parent"   
-     android:layout_height="wrap_content"  
-     android:padding="5dp"  
-     android:textStyle="bold"
-     android:textSize="16sp" 
-     >  
-    </TextView>  
-    
-    <TextView   
-     android:id="@+id/serverUrl"   
-     android:layout_width="fill_parent"   
-     android:layout_height="wrap_content"  
-     android:padding="5dp"     
-     android:textSize="16sp"   
-     >
-    </TextView>     
-</LinearLayout>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/selector"
+    android:orientation="horizontal"
+    android:padding="5dip" >
+
+    <LinearLayout
+        android:id="@+id/thumbnail"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_marginEnd="5dip"
+        android:background="@drawable/imag_bg"
+        android:padding="3dip" >
+
+        <ImageView
+            android:id="@+id/list_image"
+            android:layout_width="50dip"
+            android:layout_height="50dip"
+            android:contentDescription=""
+            android:src="@drawable/server_small" />
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/serverName"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignTop="@+id/thumbnail"
+        android:layout_toEndOf="@+id/thumbnail"
+        android:textColor="#040404"
+        android:textSize="15sp"
+        android:textStyle="bold"
+        android:typeface="sans" >
+    </TextView>
+
+    <TextView
+        android:id="@+id/serverUrl"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@+id/thumbnail"
+        android:layout_toEndOf="@+id/thumbnail"
+        android:textColor="#040404"
+        android:textSize="12sp"
+        android:textStyle="bold"
+        android:typeface="sans" >
+    </TextView>
+
+    <ImageView
+        android:id="@+id/imageView1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_centerVertical="true"
+        android:src="@drawable/arrow" />
+
+    <LinearLayout
+        android:id="@+id/toggle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="false"
+        android:layout_alignTop="@+id/serverName"
+        android:layout_marginEnd="20dip"
+        android:layout_marginRight="36dp"
+        android:layout_toLeftOf="@+id/imageView1"
+        android:background="@drawable/imag_bg"
+        android:padding="3dip" >
+
+        <ToggleButton
+            android:id="@+id/toggleButton1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="ToggleButton" />
+    </LinearLayout>
+
+</RelativeLayout>

@@ -2,12 +2,17 @@ package com.client.activities;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Logger;
 
 import com.client.gti785_lab2.R;
 import com.client.servermanager.ServerAdapter;
 import com.client.servermanager.ServerManager;
 import com.client.servermanager.ServerObject;
+import com.google.zxing.BarcodeFormat;
+import com.google.zxing.MultiFormatWriter;
+import com.google.zxing.WriterException;
+import com.google.zxing.common.BitMatrix;
 
 import android.app.Activity;
 import android.app.ActionBar;
@@ -15,6 +20,9 @@ import android.app.Fragment;
 import android.app.FragmentManager;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationListener;
@@ -34,9 +42,11 @@ import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.ToggleButton;
 
 
 
@@ -55,9 +65,11 @@ public class MainActivity extends Activity implements
 	 */
 	private CharSequence mTitle;
 
+	//identite de la section àa afficher dans le fragement
 	private int sectionId;
 	
 	private static ListView generalListView;
+	private static final String PREFERENCES_APP_SERVEURS = "MyServerList";
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -72,12 +84,23 @@ public class MainActivity extends Activity implements
 		mNavigationDrawerFragment.setUp(R.id.navigation_drawer,
 				(DrawerLayout) findViewById(R.id.drawer_layout));
 		
-		
+		//Restauration des informations des serveurs pris en photo	
+		SharedPreferences settings = getApplicationContext().getSharedPreferences(PREFERENCES_APP_SERVEURS, 0);
+	    settings = getApplicationContext().getSharedPreferences(PREFERENCES_APP_SERVEURS, 0);
+	    String value = settings.getString("servers", "");
+	   
+	    if (value != null){
+	    	String[] serversFromPersistentValue = value.split(";");
+	    	
+	    	for(String savedServer : serversFromPersistentValue)
+	    		ServerManager.getInstance().addServerFromCode(savedServer);
+	    }
+	    
 	}
 
 	static final int REQUEST_IMAGE_CAPTURE = 1;
 
-	private void dispatchTakePictureIntent() {
+	private void getQrCodeServerPicture() {
 				
 	    Intent takePictureIntent = new Intent("com.google.zxing.client.android.SCAN");
 
@@ -88,12 +111,25 @@ public class MainActivity extends Activity implements
 	}
 	@Override
 	public void onActivityResult(int requestCode, int resultCode, Intent intent) {
+		Bitmap mBitmap = null;
 		if (requestCode == 0) {
 			if (resultCode == RESULT_OK) {
 				String contents = intent.getStringExtra("SCAN_RESULT");
 				String format = intent.getStringExtra("SCAN_RESULT_FORMAT");
 				Toast.makeText(this, contents,Toast.LENGTH_LONG).show();
 				
+				// We need an Editor object to make preference changes.
+			      // All objects are from android.context.Context
+			      SharedPreferences settings = getSharedPreferences(PREFERENCES_APP_SERVEURS, 0);
+			      SharedPreferences.Editor editor = settings.edit();
+			      
+			      //Will help when we re-run the app
+			      String addserver = contents + ";";
+			      editor.putString("servers", addserver);
+
+			      // Commit the edits!
+			      editor.commit();				
+								
 				 ServerManager.getInstance().addServerFromCode(contents);
 				// Handle successful scan
 			} 
@@ -149,7 +185,7 @@ public class MainActivity extends Activity implements
 				btn.setOnClickListener(new OnClickListener() {
 		            public void onClick(View v) {
 		                // Perform action on click
-		            	dispatchTakePictureIntent();
+		            	getQrCodeServerPicture();
 		            }
 		        });
 			}
@@ -218,10 +254,11 @@ public class MainActivity extends Activity implements
 						                                  ServerManager.getInstance().getServers());
 				
 				generalListView = (ListView) rootView.findViewById(R.id.serversView);
-				generalListView.setAdapter(adapter);
+				generalListView.setAdapter(adapter);				
+				
 				
 				generalListView.setOnItemClickListener(new OnItemClickListener() {
-
+				
 					@Override
 					public void onItemClick(AdapterView<?> parent, View view,
 							int position, long id) {

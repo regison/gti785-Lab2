@@ -41,9 +41,12 @@ public class ServerObject {
 	public void setAvailable(boolean isAvailable) {
 		this.isAvailable = isAvailable;
 	}
+	public String getURL(){
+		return "http://"+ serverIPAdress + ":" + serverPort + "/";
+	}
 	@Override
 	public String toString(){
-		return "Server's name" + this.serverName +"\n" + this.serverIPAdress + ":"+ this.serverPort; 
+		return  this.serverName +"\n" + this.serverIPAdress + ":"+ this.serverPort; 
 	}
 	
 

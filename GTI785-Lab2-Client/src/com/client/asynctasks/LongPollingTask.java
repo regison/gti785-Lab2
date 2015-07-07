@@ -2,43 +2,59 @@ package com.client.asynctasks;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
+import java.net.InetAddress;
 import java.net.MalformedURLException;
+import java.net.Socket;
 import java.net.URL;
+import java.util.ArrayList;
 
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.DefaultHttpClient;
+
+import com.client.filemanager.FileManager;
 import com.client.servermanager.ServerObject;
 
 import android.os.AsyncTask;
 import android.os.StrictMode;
 
-public class LongPollingTask extends AsyncTask<ServerObject, String, String> {
+public class LongPollingTask extends AsyncTask<ArrayList<ServerObject>, String, String> {
 
+	ArrayList<ServerObject> currentAddedServers= null;
 	@Override
-	protected String doInBackground(ServerObject... params) {
-		// TODO Auto-generated method stub
+	protected String doInBackground(ArrayList<ServerObject>... params) {	
 		
-		StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder().permitNetwork().build());
-
-		HttpURLConnection conn;
+		currentAddedServers = params[0];
 		
 		try {
-			conn = (HttpURLConnection) new URL(params[0].getServerIPAdress()).openConnection();
-
-			conn.setRequestMethod("GET");
-			conn.setDoInput(true);
-			conn.setDoOutput(false);				
-			conn.connect();	
-			
-			int response = conn.getResponseCode();
-			
-			if ( response == HttpURLConnection.HTTP_OK){
-				//on fait le traitement de la requete
-				//on get la reponse du server 
+			for (ServerObject srvObj : currentAddedServers){			
 				
+				StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder().permitNetwork().build());
+
+				HttpURLConnection conn = (HttpURLConnection) new URL( srvObj.getURL() ).openConnection();
+
+				conn.setRequestMethod("GET");
+						
+				conn.connect();	
+				
+				int response = conn.getResponseCode();
+				
+				if ( response == HttpURLConnection.HTTP_OK){
+					//on fait le traitement de la requete
+					//on get la reponse du server et on etablit que son status est on
+					srvObj.setAvailable(true);				
+				}
+				if (response == HttpURLConnection.HTTP_CLIENT_TIMEOUT){
+					//son status est off				
+					srvObj.setAvailable(false);
+				}
+				if (response == HttpURLConnection.HTTP_INTERNAL_ERROR){
+					//on recommence le polling
+					srvObj.setAvailable(false);
+				}
 			}
-			if (response == HttpURLConnection.HTTP_CLIENT_TIMEOUT){
-				//on recommence le polling
-				new LongPollingTask().execute(params);
-			}
+		
 		} 
 		catch (MalformedURLException e) {
 			try {
@@ -57,5 +73,14 @@ public class LongPollingTask extends AsyncTask<ServerObject, String, String> {
 		
 		return null;
 	}
+	
+	  @SuppressWarnings("unchecked")
+	@Override
+	    protected void onPostExecute(String result) {
+	        super.onPostExecute(result);
+	        
+	        new LongPollingTask().execute(currentAddedServers);
+	    }
+
 
 }

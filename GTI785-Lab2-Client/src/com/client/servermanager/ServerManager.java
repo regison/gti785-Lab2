@@ -26,6 +26,7 @@ public class ServerManager  {
 		servers =  new ArrayList<ServerObject>();		
 	}	
 	
+	@SuppressWarnings("unchecked")
 	public void addServerFromCode(String qrCodeString){
 		
 		String [] token =  qrCodeString.split(",");
@@ -47,7 +48,8 @@ public class ServerManager  {
 			
 			servers.add( servertoAddtoList );
 			
-			//new LongPollingTask().execute(servertoAddtoList);
+			
+			new LongPollingTask().execute(servers);
 		}
 		
 	}
@@ -63,6 +65,10 @@ public class ServerManager  {
 	public void setLocation(int serverPos){
 		
 		
-		
+
+	}	
+	public ServerObject getServerAt(int position){
+		return servers.get(position);
 	}
+
 }

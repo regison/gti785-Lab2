@@ -12,5 +12,7 @@
     <string name="add_server_btn">Ajouter un serveur</string>
     <string name="listefichiers">Liste de fichiers pour</string>
     <string name="currentLocation">Dernière position de votre appareil</string>
+    <string name="minus">-</string>
+    <string name="add">+</string>
 
 </resources>
