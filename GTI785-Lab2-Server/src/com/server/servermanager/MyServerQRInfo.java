@@ -25,14 +25,30 @@ public class MyServerQRInfo {
 	private static final int WHITE = 0xFFFFFFFF;
 	private static final int BLACK = 0xFF000000;
 	
+	public MyServerQRInfo(){
+		
+	}
 	public MyServerQRInfo(int port){
 		this.port = port;
 	}
 
 	public String getAddress(){
-		return getCurrentIpAddress().get(0);
+		return address;
+	}
+	public void setAddress(String addresse){
+		this.address = addresse;
+	}
+	public String getName(){
+		return name;
+	}
+	public void setPort(int listeningPort) {
+		// TODO Auto-generated method stub
+		this.port = listeningPort;
 	}
 
+	public int getPort(){
+		return port;
+	}
 
 	/**
 	 * generate an image of the server information and draw a qr code
@@ -44,8 +60,9 @@ public class MyServerQRInfo {
 			hintMap.put(EncodeHintType.ERROR_CORRECTION, ErrorCorrectionLevel.L);
 
 			QRCodeWriter qrCodeWriter = new QRCodeWriter();
-
+			 setAddress( getCurrentIpAddress().get(0) );
 			BitMatrix byteMatrix = qrCodeWriter.encode( getAddress() +","+ port+ ", MonServeur",BarcodeFormat.QR_CODE, 750, 750, hintMap);
+			
 			
 			//Comme c un carré on peut juste utiliser la longueur
 			int qrCodeWidth = byteMatrix.getWidth();
@@ -99,9 +116,7 @@ public class MyServerQRInfo {
 						//Response reponse = server.serve(inetAddress)
 						ipList.add(inetAddress.getHostAddress());
 					}
-
 				}
-
 			}
 
 		} catch (SocketException e) {
@@ -113,5 +128,6 @@ public class MyServerQRInfo {
 		
 		return ipList;
 	}
+	
 
 }

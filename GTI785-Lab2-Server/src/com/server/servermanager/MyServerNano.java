@@ -43,7 +43,7 @@ public class MyServerNano extends NanoHTTPD{
         
         LinkedBlockingQueue<Object> lbq = new LinkedBlockingQueue<>();
         try {
-			lbq.poll(2500, TimeUnit.SECONDS);
+			lbq.poll(5, TimeUnit.SECONDS);
 			lbq.put(method);
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block

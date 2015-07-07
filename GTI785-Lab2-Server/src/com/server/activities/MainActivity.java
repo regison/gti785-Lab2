@@ -24,22 +24,24 @@ public class MainActivity extends Activity {
 		setContentView(R.layout.activity_main);
 		
 		MyServerNano msn = new MyServerNano();
-		
+		msqi = new MyServerQRInfo();
 		try {
 			msn.start();
-			msqi = new MyServerQRInfo(msn.getListeningPort());
+			msqi.setPort( msn.getListeningPort() );
+			
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}
-		
+		}		
 		
 		showCurrentQrCode();
-		Toast.makeText(getApplicationContext(),msqi.getAddress(),10);
+		
+		Toast.makeText(getApplicationContext(), "monserveur",10);
 	}
 	
 	private void showCurrentQrCode(){
 		Bitmap bitmap = msqi.generateQRCode();
+		
 		ImageView qrcode = (ImageView) findViewById(R.id.imageView1);
 		qrcode.setImageBitmap(bitmap);
 	}

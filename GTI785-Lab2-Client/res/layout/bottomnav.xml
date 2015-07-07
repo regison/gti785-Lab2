@@ -1,0 +1,70 @@
+<TabHost xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@android:id/tabhost"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:background="#777777" >
+
+    <RelativeLayout
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent" >
+
+        <RelativeLayout
+            android:id="@+id/layTab"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_centerVertical="true"
+            android:background="@drawable/selector"
+            android:gravity="center"
+            android:paddingLeft="10dp"
+            android:paddingRight="10dp" >
+
+            <TabWidget
+                android:id="@android:id/tabs"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true" />
+
+            <Button
+                android:id="@+id/redbtn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentTop="true"
+                android:background="@drawable/selector"               
+                android:paddingBottom="3dp"
+                android:paddingRight="9dp"
+                android:text="+"
+                android:textColor="#ffffff"
+                android:textSize="25dp"
+                android:textStyle="bold" 
+                android:gravity="center_vertical|center_horizontal"/>
+
+            <Button
+                android:id="@+id/button1"             
+                android:layout_toEndOf="@+id/redbtn"               
+                
+                 android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentTop="true"
+                android:background="@drawable/selector"               
+                android:paddingBottom="3dp"
+                android:paddingRight="9dp"
+                android:textColor="#ffffff"
+                android:textSize="25dp"
+                android:textStyle="bold"
+                android:text="@string/minus"                 
+                android:gravity="center_vertical|center_horizontal"/>
+            
+            
+
+        </RelativeLayout>
+
+        <FrameLayout
+            android:id="@android:id/tabcontent"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:layout_above="@id/layTab"
+            android:layout_alignParentTop="true" />
+    </RelativeLayout>
+
+</TabHost>
