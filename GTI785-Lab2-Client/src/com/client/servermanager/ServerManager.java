@@ -48,7 +48,7 @@ public class ServerManager  {
 			servers.add( servertoAddtoList );
 			
 			
-			//new LongPollingTask().execute( servertoAddtoList.getURL());
+			new LongPollingTask().execute( servertoAddtoList.getURL());
 		}
 		
 	}
