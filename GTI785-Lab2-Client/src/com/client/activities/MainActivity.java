@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
 
+import com.client.asynctasks.LongPollingTask;
 import com.client.gti785_lab2.R;
 import com.client.servermanager.ServerAdapter;
 import com.client.servermanager.ServerManager;
@@ -29,6 +30,7 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -65,9 +67,9 @@ public class MainActivity extends Activity implements
 	 */
 	private CharSequence mTitle;
 
-	//identite de la section àa afficher dans le fragement
+	//Fragment section id (1 = list of servers, 2= files for a servers, 3= localization)
 	private int sectionId;
-	
+	private SharedPreferences settings;
 	private static ListView generalListView;
 	private static final String PREFERENCES_APP_SERVEURS = "MyServerList";
 	
@@ -85,8 +87,7 @@ public class MainActivity extends Activity implements
 				(DrawerLayout) findViewById(R.id.drawer_layout));
 		
 		//Restauration des informations des serveurs pris en photo	
-		SharedPreferences settings = getApplicationContext().getSharedPreferences(PREFERENCES_APP_SERVEURS, 0);
-	    settings = getApplicationContext().getSharedPreferences(PREFERENCES_APP_SERVEURS, 0);
+		settings = PreferenceManager.getDefaultSharedPreferences(this.getApplicationContext());	
 	    String value = settings.getString("servers", "");
 	   
 	    if (value != null){
@@ -94,11 +95,10 @@ public class MainActivity extends Activity implements
 	    	
 	    	for(String savedServer : serversFromPersistentValue)
 	    		ServerManager.getInstance().addServerFromCode(savedServer);
-	    }
-	    
+	    }	   
 	}
 
-	static final int REQUEST_IMAGE_CAPTURE = 1;
+
 
 	private void getQrCodeServerPicture() {
 				
@@ -111,8 +111,9 @@ public class MainActivity extends Activity implements
 	}
 	@Override
 	public void onActivityResult(int requestCode, int resultCode, Intent intent) {
-		Bitmap mBitmap = null;
+	//	Bitmap mBitmap = null;
 		if (requestCode == 0) {
+			//Handle successfull scan
 			if (resultCode == RESULT_OK) {
 				String contents = intent.getStringExtra("SCAN_RESULT");
 				String format = intent.getStringExtra("SCAN_RESULT_FORMAT");
@@ -120,10 +121,10 @@ public class MainActivity extends Activity implements
 				
 				// We need an Editor object to make preference changes.
 			      // All objects are from android.context.Context
-			      SharedPreferences settings = getSharedPreferences(PREFERENCES_APP_SERVEURS, 0);
+			      
 			      SharedPreferences.Editor editor = settings.edit();
 			      
-			      //Will help when we re-run the app
+			      //add a separator to help retrieve all servers listed
 			      String addserver = contents + ";";
 			      editor.putString("servers", addserver);
 
@@ -131,7 +132,7 @@ public class MainActivity extends Activity implements
 			      editor.commit();				
 								
 				 ServerManager.getInstance().addServerFromCode(contents);
-				// Handle successful scan
+				
 			} 
 			else if (resultCode == RESULT_CANCELED) {
 		//Handle cancel
@@ -223,6 +224,8 @@ public class MainActivity extends Activity implements
 		static int section = 0;
 		TextView  pos = null; 
 		Location instantLocation = null;
+		View rootView = null ;
+		ArrayList<ServerObject> srvs= null;
 		
 		public static PlaceholderFragment newInstance(int sectionNumber) {
 			section = sectionNumber;
@@ -239,33 +242,19 @@ public class MainActivity extends Activity implements
 		@Override
 		public View onCreateView(LayoutInflater inflater, ViewGroup container,
 				Bundle savedInstanceState) {
-			View rootView = null ;
+			
 			
 			switch (section){
 			case 1:
 				rootView = inflater.inflate(R.layout.fragment_servers, container,
 						false);		
 				
-				ArrayList<ServerObject> srvs =  ServerManager.getInstance().getServers();
+				generalListView = (ListView) rootView.findViewById(R.id.serversView);
+				
+				srvs =  ServerManager.getInstance().getServers();
 				
 				MainActivity.LOG.info("Servers available:" + srvs.size());
 				
-				ServerAdapter adapter = new ServerAdapter(rootView.getContext(),
-						                                  ServerManager.getInstance().getServers());
-				
-				generalListView = (ListView) rootView.findViewById(R.id.serversView);
-				generalListView.setAdapter(adapter);				
-				
-				
-				generalListView.setOnItemClickListener(new OnItemClickListener() {
-				
-					@Override
-					public void onItemClick(AdapterView<?> parent, View view,
-							int position, long id) {
-						// TODO Auto-generated method stub
-						Log.d("Item clicked", generalListView.getAdapter().getItem(position) + " has been selected!");
-					}
-				});
 				
 				break;
 			case 2:
@@ -280,9 +269,11 @@ public class MainActivity extends Activity implements
 				LocationManager locationManager = (LocationManager) getActivity()
 				        .getSystemService(Context.LOCATION_SERVICE);
 				 
-				instantLocation = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+				instantLocation = locationManager.getLastKnownLocation(LocationManager.PASSIVE_PROVIDER);
 				
 				pos = (TextView) rootView.findViewById(R.id.phoneLocation);
+				
+				   pos.setText("Latitude: "+ (double) Math.round(instantLocation.getLatitude() *10000) / 10000 + " Longitude: "+ (double) Math.round(instantLocation.getLongitude() * 10000) / 10000);
 				
 				LocationListener locationListener = new LocationListener() {
 				 
@@ -308,12 +299,12 @@ public class MainActivity extends Activity implements
 				    @Override
 				    public void onLocationChanged(Location location) {
 				        // Do work with new location. Implementation of this method will be covered later.
-				        doWorkWithNewLocation(location);
+				     //   doWorkWithNewLocation(location);
 				    }
 				};
 				 
 				long minTime = 5 * 1000; // Minimum time interval for update in seconds, i.e. 5 seconds.
-				long minDistance = 10; // Minimum distance change for update in meters, i.e. 10 meters.
+				long minDistance = (long) 0.1; // Minimum distance change for update in meters, i.e. 10 meters.
 				 
 				// Assign LocationListener to LocationManager in order to receive location updates.
 				// Acquiring provider that is used for location updates will also be covered later.
@@ -328,6 +319,32 @@ public class MainActivity extends Activity implements
 			}			
 			
 			return rootView;
+		}
+		
+		
+		@Override 
+		public void onActivityCreated(Bundle savedInstanceState){
+			super.onActivityCreated(savedInstanceState);
+			
+			final Context current = rootView.getContext();
+			ServerAdapter adapter = new ServerAdapter(this.getActivity(), srvs);
+			
+		
+			generalListView.setAdapter(adapter);				
+			
+			
+			generalListView.setOnItemClickListener(new OnItemClickListener() {
+			
+				@Override
+				public void onItemClick(AdapterView<?> parent, View view,
+						int position, long id) {
+					
+					// TODO Auto-generated method stub
+				//	new LongPollingTask().execute( ((ServerObject) generalListView.getAdapter().getItem(position)).getURL(),"getfilelist" );
+					Log.d("Item clicked", parent.getAdapter().getItem(position) + " has been selected!");
+				Toast.makeText(view.getContext(),  generalListView.getAdapter().getItem(position).toString() + " has been selected!",Toast.LENGTH_LONG).show();
+				}
+			});
 		}
 
 		@Override

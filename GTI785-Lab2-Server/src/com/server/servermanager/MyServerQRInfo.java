@@ -95,8 +95,7 @@ public class MyServerQRInfo {
 	 * return an array of ip adress from the system
 	 * @return
 	 */
-	private ArrayList<String> getCurrentIpAddress() {
-		String ip = "";
+	private ArrayList<String> getCurrentIpAddress() {		
 
 		ArrayList<String> ipList = new ArrayList<String>();
 		try {
@@ -121,8 +120,7 @@ public class MyServerQRInfo {
 
 		} catch (SocketException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
-			ip += "Something Wrong! " + e.toString() + "\n";
+			e.printStackTrace();			
 		}
 
 		

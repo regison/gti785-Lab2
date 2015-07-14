@@ -4,7 +4,9 @@
     android:layout_height="wrap_content"
     android:background="@drawable/selector"
     android:orientation="horizontal"
-    android:padding="5dip" >
+    android:padding="5dip" 
+    android:descendantFocusability="blocksDescendants"
+    >
 
     <LinearLayout
         android:id="@+id/thumbnail"
@@ -71,7 +73,8 @@
             android:id="@+id/toggleButton1"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="ToggleButton" />
+            android:text="ToggleButton" 
+            android:focusable="false"/>
     </LinearLayout>
 
 </RelativeLayout>

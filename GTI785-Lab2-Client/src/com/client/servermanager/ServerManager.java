@@ -1,7 +1,6 @@
 package com.client.servermanager;
 
 import java.util.ArrayList;
-import java.util.StringTokenizer;
 
 import android.location.Location;
 
@@ -25,8 +24,7 @@ public class ServerManager  {
 	public ServerManager (){
 		servers =  new ArrayList<ServerObject>();		
 	}	
-	
-	@SuppressWarnings("unchecked")
+
 	public void addServerFromCode(String qrCodeString){
 		
 		String [] token =  qrCodeString.split(",");
@@ -45,11 +43,12 @@ public class ServerManager  {
 			servertoAddtoList.setServerIPAdress( token[0] );
 			servertoAddtoList.setServerPort( Integer.parseInt( token[1] ) );
 			servertoAddtoList.setServerName( token[2] );
+			servertoAddtoList.setUrl( "http://" + servertoAddtoList.getServerIPAdress() +":" + servertoAddtoList.getServerPort()+"/" );
 			
 			servers.add( servertoAddtoList );
 			
 			
-			new LongPollingTask().execute(servers);
+			//new LongPollingTask().execute( servertoAddtoList.getURL());
 		}
 		
 	}

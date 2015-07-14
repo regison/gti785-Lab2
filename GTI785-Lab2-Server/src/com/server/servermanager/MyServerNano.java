@@ -46,22 +46,27 @@ public class MyServerNano extends NanoHTTPD{
 			lbq.poll(5, TimeUnit.SECONDS);
 			lbq.put(method);
 		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
+		
 			MyServerNano.LOG.info( e.getMessage() );
 			e.printStackTrace();
 		}
         
         switch(uri){
         
-        case "/getfileslist" :  
-        	
+        case HttpFunctions.GetFileList :  
+        	response = param.size() + "" ;
         	break;  
-        case "/getgeopos":
-        		
+        case HttpFunctions.GetGeoPosition:        		
         	break;
-       
-        }
-        
+        case HttpFunctions.TransferFile : 
+        	break;        	
+        case HttpFunctions.Pair: 
+        	break;
+        case HttpFunctions.UnPair : 
+        	break;        	
+        case HttpFunctions.Notifications : 
+        	break;       
+        }        
         return newFixedLengthResponse(response);    
     }
 

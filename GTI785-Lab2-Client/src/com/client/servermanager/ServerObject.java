@@ -1,5 +1,9 @@
 package com.client.servermanager;
 
+import java.util.ArrayList;
+
+import com.client.filemanager.File;
+
 import android.location.Location;
 
 public class ServerObject {
@@ -9,6 +13,9 @@ public class ServerObject {
 	private int serverPort;
 	private Location serverLocation;
 	private boolean isAvailable;
+	private String URL;
+	
+	private ArrayList<File> serverFiles = new ArrayList<File>();
 	
 	
 	public String getServerName() {
@@ -41,13 +48,24 @@ public class ServerObject {
 	public void setAvailable(boolean isAvailable) {
 		this.isAvailable = isAvailable;
 	}
-	public String getURL(){
-		return "http://"+ serverIPAdress + ":" + serverPort + "/";
+	public void setUrl(String Url){
+		this.URL = Url;
 	}
+	public String getURL(){
+		return URL;
+	}
+	public ArrayList<File> getServerFiles() {
+		return serverFiles;
+	}
+	public void setServerFiles(ArrayList<File> serverFiles) {
+		this.serverFiles = serverFiles;
+	}
+	
 	@Override
 	public String toString(){
-		return  this.serverName +"\n" + this.serverIPAdress + ":"+ this.serverPort; 
+		return  this.serverName +" URL:" + this.serverIPAdress + ":"+ this.serverPort; 
 	}
+	
 	
 
 }
