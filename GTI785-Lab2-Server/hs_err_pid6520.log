@@ -1,0 +1,126 @@
+#
+# A fatal error has been detected by the Java Runtime Environment:
+#
+#  Internal Error (javaClasses.cpp:127), pid=6520, tid=5868
+#  fatal error: Invalid layout of preloaded class
+#
+# JRE version:  (8.0_45-b15) (build )
+# Java VM: Java HotSpot(TM) 64-Bit Server VM (25.45-b02 mixed mode windows-amd64 compressed oops)
+# Failed to write core dump. Minidumps are not enabled by default on client versions of Windows
+#
+# If you would like to submit a bug report, please visit:
+#   http://bugreport.java.com/bugreport/crash.jsp
+#
+
+---------------  T H R E A D  ---------------
+
+Current thread (0x0000000002990800):  JavaThread "Unknown thread" [_thread_in_vm, id=5868, stack(0x0000000002890000,0x0000000002990000)]
+
+Stack: [0x0000000002890000,0x0000000002990000]
+[error occurred during error reporting (printing stack bounds), id 0xc0000005]
+
+Native frames: (J=compiled Java code, j=interpreted, Vv=VM code, C=native code)
+V  [jvm.dll+0x32b57a]
+V  [jvm.dll+0x279873]
+V  [jvm.dll+0x27a509]
+V  [jvm.dll+0x29aa24]
+C  [KERNELBASE.dll+0xde1b6]
+C  [ntdll.dll+0xa8114]
+C  [ntdll.dll+0x8988f]
+C  [ntdll.dll+0x9a77d]
+C  [ntdll.dll+0x429fb]
+C  [ntdll.dll+0x9993e]
+V  [jvm.dll+0x21bcd1]
+
+
+---------------  P R O C E S S  ---------------
+
+Java Threads: ( => current thread )
+
+Other Threads:
+
+=>0x0000000002990800 (exited) JavaThread "Unknown thread" [_thread_in_vm, id=5868, stack(0x0000000002890000,0x0000000002990000)]
+
+VM state:not at safepoint (not fully initialized)
+
+VM Mutex/Monitor currently owned by a thread: None
+
+GC Heap History (0 events):
+No events
+
+Deoptimization events (0 events):
+No events
+
+Internal exceptions (0 events):
+No events
+
+Events (10 events):
+Event: 0.030 loading class java/lang/CharSequence done
+Event: 0.031 loading class java/lang/String done
+Event: 0.031 loading class java/lang/Class
+Event: 0.031 loading class java/lang/reflect/AnnotatedElement
+Event: 0.031 loading class java/lang/reflect/AnnotatedElement done
+Event: 0.031 loading class java/lang/reflect/GenericDeclaration
+Event: 0.031 loading class java/lang/reflect/GenericDeclaration done
+Event: 0.031 loading class java/lang/reflect/Type
+Event: 0.031 loading class java/lang/reflect/Type done
+Event: 0.032 loading class java/lang/Class done
+
+
+Dynamic libraries:
+0x00007ff6709b0000 - 0x00007ff6709e7000 	C:\Program Files\Java\jre1.8.0_45\bin\javaw.exe
+0x00007ffe03270000 - 0x00007ffe03419000 	C:\Windows\SYSTEM32\ntdll.dll
+0x00007ffe02fb0000 - 0x00007ffe030ea000 	C:\Windows\system32\KERNEL32.DLL
+0x00007ffe00950000 - 0x00007ffe00a5f000 	C:\Windows\system32\KERNELBASE.dll
+0x00007ffe021e0000 - 0x00007ffe02285000 	C:\Windows\system32\ADVAPI32.dll
+0x00007ffe030f0000 - 0x00007ffe03261000 	C:\Windows\system32\USER32.dll
+0x00007ffdfeb30000 - 0x00007ffdfed8a000 	C:\Windows\WinSxS\amd64_microsoft.windows.common-controls_6595b64144ccf1df_6.0.9600.16384_none_62475f7becb72503\COMCTL32.dll
+0x00007ffe02130000 - 0x00007ffe021d7000 	C:\Windows\system32\msvcrt.dll
+0x00007ffe02e30000 - 0x00007ffe02e87000 	C:\Windows\SYSTEM32\sechost.dll
+0x00007ffe029f0000 - 0x00007ffe02b26000 	C:\Windows\system32\RPCRT4.dll
+0x00007ffe026b0000 - 0x00007ffe027f5000 	C:\Windows\system32\GDI32.dll
+0x00007ffe02470000 - 0x00007ffe024a4000 	C:\Windows\system32\IMM32.DLL
+0x00007ffe02570000 - 0x00007ffe026a9000 	C:\Windows\system32\MSCTF.dll
+0x000000006fee0000 - 0x000000006ffb2000 	C:\Program Files\Java\jre1.8.0_45\bin\msvcr100.dll
+0x00000000700b0000 - 0x0000000070933000 	C:\Program Files\Java\jre1.8.0_45\bin\server\jvm.dll
+0x00007ffdfe730000 - 0x00007ffdfe739000 	C:\Windows\SYSTEM32\WSOCK32.dll
+0x00007ffdf4780000 - 0x00007ffdf479f000 	C:\Windows\SYSTEM32\WINMM.dll
+0x00007ffdefa30000 - 0x00007ffdefa3a000 	C:\Windows\SYSTEM32\VERSION.dll
+0x00007ffe02cc0000 - 0x00007ffe02cc7000 	C:\Windows\system32\PSAPI.DLL
+0x00007ffe02f50000 - 0x00007ffe02fa8000 	C:\Windows\system32\WS2_32.dll
+0x00007ffdf4750000 - 0x00007ffdf477a000 	C:\Windows\SYSTEM32\WINMMBASE.dll
+0x00007ffe029e0000 - 0x00007ffe029e9000 	C:\Windows\system32\NSI.dll
+0x00007ffe00a60000 - 0x00007ffe00aaa000 	C:\Windows\SYSTEM32\cfgmgr32.dll
+0x00007ffdff480000 - 0x00007ffdff4a6000 	C:\Windows\SYSTEM32\DEVOBJ.dll
+0x00000000700a0000 - 0x00000000700af000 	C:\Program Files\Java\jre1.8.0_45\bin\verify.dll
+0x0000000070070000 - 0x0000000070099000 	C:\Program Files\Java\jre1.8.0_45\bin\java.dll
+0x0000000070050000 - 0x0000000070066000 	C:\Program Files\Java\jre1.8.0_45\bin\zip.dll
+0x00007ffde4470000 - 0x00007ffde45f8000 	C:\Windows\SYSTEM32\dbghelp.dll
+
+VM Arguments:
+jvm_args: -Dfile.encoding=Cp1252 -Xbootclasspath:C:\Users\r.registe\android-sdks\platforms\android-22\android.jar 
+java_command: com.server.servermanager.MyServerNano
+java_class_path (initial): C:\Users\r.registe\git\GTI785-Lab2-Server\bin\classes;C:\Users\r.registe\git\GTI785-Lab2-Server\libs\android-support-v4.jar;C:\Users\r.registe\Downloads\gson-2.3.1.jar;C:\Users\r.registe\Downloads\zxing-2.1.jar (1)\zxing-2.1.jar;C:\Users\r.registe\Downloads\core-2.3.0.jar
+Launcher Type: SUN_STANDARD
+
+Environment Variables:
+PATH=C:/Program Files/Java/jre1.8.0_45/bin/server;C:/Program Files/Java/jre1.8.0_45/bin;C:/Program Files/Java/jre1.8.0_45/lib/amd64;C:\ProgramData\Oracle\Java\javapath;C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem;C:\Windows\System32\WindowsPowerShell\v1.0\;C:\Program Files (x86)\Microsoft SQL Server\110\Tools\Binn\;C:\Program Files\Microsoft SQL Server\110\Tools\Binn\;C:\Program Files\Microsoft SQL Server\110\DTS\Binn\;C:\Program Files (x86)\Microsoft SQL Server\110\Tools\Binn\ManagementStudio\;C:\Program Files (x86)\Microsoft Visual Studio 10.0\Common7\IDE\PrivateAssemblies\;C:\Program Files (x86)\Microsoft SQL Server\110\DTS\Binn\;C:\Program Files (x86)\Windows Kits\8.1\Windows Performance Toolkit\;C:\Program Files (x86)\Microsoft SDKs\TypeScript\1.0\;C:\Program Files\Microsoft SQL Server\120\Tools\Binn\;C:\Program Files (x86)\Skype\Phone\;C:\Program Files (x86)\Microsoft ASP.NET\ASP.NET Web Pages\v1.0\;C:\Program Files\Microsoft\Web Platform Installer\;C:\Program Files (x86)\Plantronics\PlantronicsURE\;C:\Users\r.registe\Documents\eclipse;
+USERNAME=r.registe
+OS=Windows_NT
+PROCESSOR_IDENTIFIER=Intel64 Family 6 Model 69 Stepping 1, GenuineIntel
+
+
+
+---------------  S Y S T E M  ---------------
+
+OS: Windows 8.1 , 64 bit Build 9600 (6.3.9600.16384)
+
+CPU:total 4 (2 cores per cpu, 2 threads per core) family 6 model 69 stepping 1, cmov, cx8, fxsr, mmx, sse, sse2, sse3, ssse3, sse4.1, sse4.2, popcnt, avx, avx2, aes, clmul, erms, lzcnt, ht, tsc, tscinvbit, bmi1, bmi2
+
+Memory: 4k page, physical 4097592k(1871568k free), swap 8291896k(3765232k free)
+
+vm_info: Java HotSpot(TM) 64-Bit Server VM (25.45-b02) for windows-amd64 JRE (1.8.0_45-b15), built on Apr 30 2015 12:40:44 by "java_re" with MS VC++ 10.0 (VS2010)
+
+time: Tue Jul 14 02:13:35 2015
+elapsed time: 0 seconds (0d 0h 0m 0s)
+
