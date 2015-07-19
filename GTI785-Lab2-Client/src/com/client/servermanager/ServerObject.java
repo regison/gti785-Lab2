@@ -63,7 +63,7 @@ public class ServerObject {
 	
 	@Override
 	public String toString(){
-		return  this.serverName +" URL:" + this.serverIPAdress + ":"+ this.serverPort; 
+		return  this.serverName +"," + this.serverIPAdress + ","+ this.serverPort; 
 	}
 	
 	

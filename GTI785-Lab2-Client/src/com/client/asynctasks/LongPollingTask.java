@@ -27,52 +27,58 @@ import com.client.servermanager.ServerObject;
 import android.os.AsyncTask;
 import android.os.StrictMode;
 
-public class LongPollingTask extends AsyncTask<String, String, String> {
+public class LongPollingTask extends AsyncTask<String, String, ServerObject> {
 
 	ServerObject srvObj = new ServerObject();
 	InputStream content = null;
 	HttpURLConnection conn = null;
 	
 	@Override
-	protected String doInBackground(String... params) {
-
+	protected ServerObject doInBackground(String... params) {
 		
 		String payload = "";
 		String test = "";
 		String payloadAddToUrl="";
-		String url = params[0];
+		
+		String server[] = params[0].split(",");
+		
+		srvObj.setServerName(server[0]);
+		srvObj.setServerIPAdress(server[1]);
+		srvObj.setServerPort( Integer.parseInt(server[2]) );
+		
 		String function = "";
+		srvObj.setUrl("http://" + server[1] +":" + server[2] +"/");
 		
-		if (params.length > 2){
-		function = params[1]; // httpfunction
-		 payload = params[2];//payload
-		 test = "";	
-		
-		}
-		
-		srvObj.setUrl(url.concat(function) );
+		if ( params.length > 1 && !params[1].isEmpty()  )
+			srvObj.setUrl( srvObj.getURL() + params[1] ); // add httpfunction
 
+		if (params.length > 2 && !params[2].isEmpty()) {
+
+			List<NameValuePair> nameValuePair = new ArrayList<NameValuePair>(
+					1);
+			nameValuePair.add(new BasicNameValuePair("payload", params[3]));
+			
+			payloadAddToUrl =  "?" + URLEncodedUtils.format( nameValuePair, "UTF-8");
+			
+			srvObj.setUrl( srvObj.getURL() + payloadAddToUrl ); // payload + 
+		}
+
+		
+		
 		try {
 			StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder()
 					.permitNetwork().build());
-
-			if (payload != "") {
-				List<NameValuePair> nameValuePair = new ArrayList<NameValuePair>(
-						1);
-				nameValuePair.add(new BasicNameValuePair("payload", payload));
-				
-				payloadAddToUrl =  function + "?" + URLEncodedUtils.format( nameValuePair, "UTF-8");
-				srvObj.setUrl( srvObj.getURL() + payloadAddToUrl );
-			}
-			conn = (HttpURLConnection) new URL(
-					srvObj.getURL()).openConnection();
+			conn = (HttpURLConnection) new URL(srvObj.getURL()).openConnection();
 
 			conn.setRequestMethod("GET");
-
+			
 			conn.connect();
 
 			int response = conn.getResponseCode();
 
+			if(response == -1)
+				srvObj.setAvailable(false);
+			
 			if (response == HttpURLConnection.HTTP_OK) {
 				// on fait le traitement de la requete
 				// on get la reponse du server et on etablit que son status est
@@ -91,14 +97,16 @@ public class LongPollingTask extends AsyncTask<String, String, String> {
 				}
 
 			}
-			if (response == HttpURLConnection.HTTP_CLIENT_TIMEOUT) {
+			else if (response == HttpURLConnection.HTTP_CLIENT_TIMEOUT) {
 				// son status est off
 				srvObj.setAvailable(false);
 			}
-			if (response == HttpURLConnection.HTTP_INTERNAL_ERROR) {
+			else if (response == HttpURLConnection.HTTP_INTERNAL_ERROR) {
 				// on recommence le polling
 				srvObj.setAvailable(false);
 			}
+			else
+				srvObj.setAvailable(false);
 
 		} catch (MalformedURLException e) {
 			try {
@@ -109,23 +117,33 @@ public class LongPollingTask extends AsyncTask<String, String, String> {
 			}
 			e.printStackTrace();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
+			try {
+				content.close();
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+        	conn.disconnect();
+				srvObj.setAvailable(false);
 			e.printStackTrace();
 		}
 		finally { 
-            try { content.close(); } catch(Throwable t) {}
-            try { conn.disconnect(); } catch(Throwable t) {}
+            try { 
+            	content.close();
+            	conn.disconnect();
+            } catch(Throwable t) {}
+            
     } 
 
 
-		return null;
+		return srvObj;
 	}
 
 	@Override
-	protected void onPostExecute(String result) {
+	protected void onPostExecute(ServerObject result) {
 		super.onPostExecute(result);
 
-	//	new LongPollingTask().execute(srvObj.getURL());
+		new LongPollingTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, srvObj.toString());
 	}
 
 }

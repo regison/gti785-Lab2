@@ -2,13 +2,16 @@ package com.client.servermanager;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 import com.client.asynctasks.LongPollingTask;
+import com.client.asynctasks.NotificationsPollingTask;
 import com.client.gti785_lab2.R;
 
 import android.app.Activity;
 import android.content.Context;
 import android.location.LocationManager;
+import android.os.AsyncTask;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -39,8 +42,16 @@ public class ServerAdapter extends ArrayAdapter<ServerObject> {
 
 		// to fix when adding a new server
 		View serverView = convertView;
-		
-		ServerObject srv = getItem(position);
+		Boolean checkIsOnline = false;
+		ServerObject srv2  = getItem(position);
+		/*
+		ServerObject srv2 = null;
+		try {
+			srv2 = new LongPollingTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR,  getItem(position).toString() ).get();
+		} catch (InterruptedException | ExecutionException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}*/
 		ViewHolderServer viewHolder;
 		
 		if (convertView == null) {	
@@ -59,27 +70,21 @@ public class ServerAdapter extends ArrayAdapter<ServerObject> {
 			viewHolder = (ViewHolderServer) serverView.getTag();
 		}
 		
-		viewHolder.getServerName().setText( srv.getServerName() );
-		viewHolder.getServerURL().setText( srv.getURL() );
+		viewHolder.getServerName().setText( srv2.getServerName() );
+		viewHolder.getServerURL().setText( srv2.getURL() );
 
-		if (srv.isAvailable()) {
+		try {
+			checkIsOnline = new NotificationsPollingTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR,  srv2.toString(),"status" ).get();
+		} catch (InterruptedException | ExecutionException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		if (checkIsOnline) {
 			ToggleButton toggle = (ToggleButton) serverView
 					.findViewById(R.id.toggleButton1);
 			toggle.setChecked(true);
-		}		
+		}	
 		
-		/*
-				TextView serverName = (TextView) serverView
-						.findViewById(R.id.serverName);				
-				TextView servUrl = (TextView) serverView
-						.findViewById(R.id.serverUrl);
-				
-				serverName.setText(srv.getServerName());
-				servUrl.setText(srv.getURL());
-				
-				//new LongPollingTask().execute( srvs.get(i) );
-				
-		*/		
 				
 		return serverView;
 	}

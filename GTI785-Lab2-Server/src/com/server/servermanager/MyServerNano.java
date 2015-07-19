@@ -41,7 +41,7 @@ public class MyServerNano extends NanoHTTPD{
         
         MyServerNano.LOG.info(method + " '" + uri + "' ");
         
-        LinkedBlockingQueue<Object> lbq = new LinkedBlockingQueue<>();
+        /*LinkedBlockingQueue<Object> lbq = new LinkedBlockingQueue<>();
         try {
 			lbq.poll(5, TimeUnit.SECONDS);
 			lbq.put(method);
@@ -50,6 +50,7 @@ public class MyServerNano extends NanoHTTPD{
 			MyServerNano.LOG.info( e.getMessage() );
 			e.printStackTrace();
 		}
+		*/
         
         switch(uri){
         
@@ -64,8 +65,12 @@ public class MyServerNano extends NanoHTTPD{
         	break;
         case HttpFunctions.UnPair : 
         	break;        	
-        case HttpFunctions.Notifications : 
-        	break;       
+        case "/notifications" : 
+        	response = "notifications";
+        	break;
+        case HttpFunctions.Status : 
+        	response = "success";
+        	break;
         }        
         return newFixedLengthResponse(response);    
     }

@@ -1,8 +1,10 @@
 package com.client.servermanager;
 
 import java.util.ArrayList;
+import java.util.concurrent.Executor;
 
 import android.location.Location;
+import android.os.AsyncTask;
 
 import com.client.asynctasks.LongPollingTask;
 
@@ -45,10 +47,7 @@ public class ServerManager  {
 			servertoAddtoList.setServerName( token[2] );
 			servertoAddtoList.setUrl( "http://" + servertoAddtoList.getServerIPAdress() +":" + servertoAddtoList.getServerPort()+"/" );
 			
-			servers.add( servertoAddtoList );
-			
-			
-			new LongPollingTask().execute( servertoAddtoList.getURL());
+			servers.add( servertoAddtoList );						
 		}
 		
 	}

@@ -1,11 +1,31 @@
 package com.server.filemanager;
 
-import com.google.gson.Gson;
+import java.util.ArrayList;
+
+import android.app.Activity;
+
+
 
 public class MainFileManager {
 	
-	public Gson getFileList(){
-		return null;
+	private Activity serverActivity = null;
+	
+	private ArrayList<File> fileList;
+	
+	
+	public MainFileManager(Activity serverActivity){
+		this.serverActivity = serverActivity;
+		fileList = new  ArrayList<File>();
+	}
+	
+	public ArrayList<File> getFileList(){
+		return fileList;
+	}
+	
+	public File getFile(int position){
+	
+		return getFileList().get(position);
 	}
 
+	
 }

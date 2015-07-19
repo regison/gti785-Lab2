@@ -55,6 +55,22 @@
                 android:text="@string/minus"                 
                 android:gravity="center_vertical|center_horizontal"/>
             
+            <Button
+                android:id="@+id/sort"             
+                android:layout_toEndOf="@+id/button1"               
+                
+                 android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentTop="true"
+                             
+                android:paddingBottom="3dp"
+                
+                android:textColor="#ffffff"
+                
+                android:textStyle="bold"
+                android:background="@drawable/sort"                
+                android:gravity="center_vertical|center_horizontal"/>
+            
             
 
         </RelativeLayout>
