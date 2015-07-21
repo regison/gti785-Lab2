@@ -80,10 +80,13 @@ public class ServerAdapter extends ArrayAdapter<ServerObject> {
 			e.printStackTrace();
 		}
 		if (checkIsOnline) {
+			
 			ToggleButton toggle = (ToggleButton) serverView
 					.findViewById(R.id.toggleButton1);
 			toggle.setChecked(true);
 		}	
+		
+		srv2.setAvailable(checkIsOnline);
 		
 				
 		return serverView;

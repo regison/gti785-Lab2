@@ -1,4 +1,4 @@
-package com.server.servermanager;
+package com.client.servermanager;
 
 import android.graphics.Bitmap;
 

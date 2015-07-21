@@ -4,8 +4,8 @@
     <string name="app_name">Lab 2 : mobile file server</string>
     <string name="title_section1">Serveurs</string>
     <string name="title_section2">Fichiers</string>
-    <string name="title_section3">Position</string>
-    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="title_section3">Position géographique</string>
+    <string name="title_section4">Photo QR CODE du device</string><string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
     <string name="action_example">Example action</string>
     <string name="action_settings">Settings</string>
@@ -14,5 +14,8 @@
     <string name="currentLocation">Dernière position de votre appareil</string>
     <string name="minus">-</string>
     <string name="add">+</string>
+    <string name="ipadress">Adresse courante de l\'appareil:</string>
+    <string name="cancel">Annuler</string>
+    
 
 </resources>

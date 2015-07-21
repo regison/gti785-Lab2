@@ -1,35 +1,37 @@
 package com.client.activities;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.ExecutionException;
 import java.util.logging.Logger;
 
-import com.client.asynctasks.LongPollingTask;
 import com.client.gti785_lab2.R;
+import com.client.localization.DeviceLocalisation;
 import com.client.servermanager.ServerAdapter;
 import com.client.servermanager.ServerManager;
 import com.client.servermanager.ServerObject;
 import com.client.utils.ClientSideUtils;
 import com.google.gson.Gson;
+import com.client.servermanager.MyServerNano;
+import com.client.servermanager.MyServerQRInfo;
 
 import android.app.Activity;
 import android.app.ActionBar;
+import android.app.AlertDialog;
+import android.app.AlertDialog.Builder;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
 import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -41,10 +43,11 @@ import android.support.v4.widget.DrawerLayout;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.PopupMenu;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.widget.ToggleButton;
 
 public class MainActivity extends Activity implements
 		NavigationDrawerFragment.NavigationDrawerCallbacks {
@@ -88,7 +91,7 @@ public class MainActivity extends Activity implements
 		@SuppressWarnings("unchecked")
 		ArrayList<String> servers = new Gson().fromJson(
 				settings.getString("servers", ""), ArrayList.class);
-		
+
 		ClientSideUtils.GetScannedDevicesFromSharedPreferences(servers);
 	}
 
@@ -158,6 +161,9 @@ public class MainActivity extends Activity implements
 			break;
 		case 3:
 			mTitle = getString(R.string.title_section3);
+			break;
+		case 4:
+			mTitle = getString(R.string.title_section4);
 			break;
 		}
 	}
@@ -261,107 +267,173 @@ public class MainActivity extends Activity implements
 			case 3:
 				rootView = inflater.inflate(R.layout.fragment_phone_position,
 						container, false);
+				break;
+			case 4:
+				rootView = inflater.inflate(R.layout.fragment_qrcode,
+						container, false);
 
-				// Don't initialize location manager, retrieve it from system
-				// services.
-				LocationManager locationManager = (LocationManager) getActivity()
-						.getSystemService(Context.LOCATION_SERVICE);
-
-				instantLocation = locationManager
-						.getLastKnownLocation(LocationManager.PASSIVE_PROVIDER);
-
-				pos = (TextView) rootView.findViewById(R.id.phoneLocation);
-
-				pos.setText("Latitude: "
-						+ (double) Math.round(instantLocation.getLatitude() * 10000)
-						/ 10000
-						+ " Longitude: "
-						+ (double) Math.round(instantLocation.getLongitude() * 10000)
-						/ 10000);
-
-				LocationListener locationListener = new LocationListener() {
-
-					@Override
-					public void onStatusChanged(String provider, int status,
-							Bundle extras) {
-					}
-
-					@Override
-					public void onProviderEnabled(String provider) {
-						Toast.makeText(getActivity(),
-								"Provider enabled: " + provider,
-								Toast.LENGTH_SHORT).show();
-					}
-
-					@Override
-					public void onProviderDisabled(String provider) {
-						Toast.makeText(getActivity(),
-								"Provider disabled: " + provider,
-								Toast.LENGTH_SHORT).show();
-					}
-
-					@Override
-					public void onLocationChanged(Location location) {
-						// Do work with new location. Implementation of this
-						// method will be covered later.
-						// doWorkWithNewLocation(location);
-					}
-				};
-
-				long minTime = 5 * 1000; // Minimum time interval for update in
-											// seconds, i.e. 5 seconds.
-				long minDistance = (long) 0.1; // Minimum distance change for
-												// update in meters, i.e. 10
-												// meters.
-
-				// Assign LocationListener to LocationManager in order to
-				// receive location updates.
-				// Acquiring provider that is used for location updates will
-				// also be covered later.
-				// Instead of LocationListener, PendingIntent can be assigned,
-				// also instead of
-				// provider name, criteria can be used, but we won't use those
-				// approaches now.
-				locationManager.requestLocationUpdates(getProviderName(),
-						minTime, minDistance, locationListener);
-				doWorkWithNewLocation(instantLocation);
-
-				// MapView mapView = (MapView)
-				// rootView.findViewById(R.id.map_view);
+				// Toast.makeText(rootView.getContext(),
+				// "monserveur",Toast.LENGTH_LONG).show();
 				break;
 			}
 
 			return rootView;
 		}
 
+		private void showCurrentQrCode(MyServerQRInfo msqi, View view) {
+			Bitmap bitmap = msqi.generateQRCode();
+
+			ImageView qrcode = (ImageView) view.findViewById(R.id.imageView2);
+			TextView txtQrCode = (TextView) view.findViewById(R.id.ipadress);
+			txtQrCode.setText(msqi.getAddress());
+			qrcode.setImageBitmap(bitmap);
+		}
+
 		@Override
 		public void onActivityCreated(Bundle savedInstanceState) {
 			super.onActivityCreated(savedInstanceState);
 
-			final Context current = rootView.getContext();
-			ServerAdapter adapter = new ServerAdapter(this.getActivity(), srvs);
+			switch (section) {
+			case 1:
+				final Activity current = this.getActivity();
 
-			generalListView.setAdapter(adapter);
+				ServerAdapter adapter = new ServerAdapter(this.getActivity(),
+						srvs);
 
-			adapter.notifyDataSetChanged();
+				generalListView.setAdapter(adapter);
 
-			generalListView.setOnItemClickListener(new OnItemClickListener() {
+				adapter.notifyDataSetChanged();
 
-				@Override
-				public void onItemClick(AdapterView<?> parent, View view,
-						int position, long id) {
+				generalListView
+						.setOnItemClickListener(new OnItemClickListener() {
 
-					Log.d("Item clicked", " His available"
-							+ generalListView.getAdapter().getItem(position)
-									.toString());
-					Toast.makeText(
-							view.getContext(),
-							generalListView.getAdapter().getItem(position)
-									.toString()
-									+ " has been selected!", Toast.LENGTH_LONG)
-							.show();
+							@Override
+							public void onItemClick(AdapterView<?> parent,
+									View view, int position, long id) {
+
+								ServerObject currentSrv = (ServerObject) generalListView
+										.getAdapter().getItem(position);
+
+								AlertDialog.Builder builder = new Builder(view
+										.getContext());
+
+								if (currentSrv != null
+										&& currentSrv.isAvailable()) {
+
+									builder.setTitle("Choose an action")
+											.setNegativeButton(
+													R.string.cancel,
+													new DialogInterface.OnClickListener() {
+
+														@Override
+														public void onClick(
+																DialogInterface dialog,
+																int which) {
+															// TODO
+															// Auto-generated
+															// method stub
+
+														}
+													})
+											.setItems(
+													new String[] { "Paired",
+															"Supprimer" },
+													new DialogInterface.OnClickListener() {
+
+														@Override
+														public void onClick(
+																DialogInterface dialog,
+																int which) {
+															// TODO
+															// Auto-generated
+															// method stub
+															Toast.makeText(
+																	current,
+																	dialog.toString()
+																			+ " has been click!",
+																	Toast.LENGTH_LONG)
+																	.show();
+
+														}
+													});
+								} else {
+									builder.setTitle("Impossible de pairer")
+											.setMessage(
+													"Ce serveur ne peut être pairé,\n car il est hors ligne")
+											.setNegativeButton(
+													R.string.cancel,
+													new DialogInterface.OnClickListener() {
+
+														@Override
+														public void onClick(
+																DialogInterface dialog,
+																int which) {
+														}
+
+													});
+								}
+
+								builder.create().show();
+
+								Log.d("Item clicked",
+										" His available"
+												+ generalListView.getAdapter()
+														.getItem(position)
+														.toString());
+								Toast.makeText(
+										view.getContext(),
+										generalListView.getAdapter()
+												.getItem(position).toString()
+												+ " has been selected!",
+										Toast.LENGTH_LONG).show();
+							}
+						});
+
+				break;
+			case 2:
+
+				break;
+			case 3:
+				// Don't initialize location manager, retrieve it from system
+				// services.
+				LocationManager locationManager = (LocationManager) getActivity()
+						.getSystemService(Context.LOCATION_SERVICE);
+
+				instantLocation = locationManager
+						.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+
+				DeviceLocalisation deviceLoc = new DeviceLocalisation(
+						instantLocation, this.getActivity());
+
+				if (instantLocation != null) {
+
+					pos = (TextView) rootView.findViewById(R.id.phoneLocation);
+
+					pos.setText("Latitude: "
+							+ (double) Math.round(instantLocation.getLatitude() * 10000)
+							/ 10000
+							+ " Longitude: "
+							+ (double) Math.round(instantLocation
+									.getLongitude() * 10000) / 10000);
 				}
-			});
+				deviceLoc.getLocationUpdates(locationManager);
+
+				break;
+			case 4:
+
+				MyServerNano msn = new MyServerNano();
+				MyServerQRInfo msqi = new MyServerQRInfo();
+				try {
+					msn.start();
+					msqi.setPort(msn.getListeningPort());
+
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				showCurrentQrCode(msqi, rootView);
+				break;
+			}
 		}
 
 		@Override
@@ -371,126 +443,5 @@ public class MainActivity extends Activity implements
 					ARG_SECTION_NUMBER));
 		}
 
-		/**
-		 * Get provider name.
-		 * 
-		 * @return Name of best suiting provider.
-		 * */
-		String getProviderName() {
-			LocationManager locationManager = (LocationManager) getActivity()
-					.getSystemService(Context.LOCATION_SERVICE);
-
-			Criteria criteria = new Criteria();
-			criteria.setPowerRequirement(Criteria.POWER_LOW); // Chose your
-																// desired power
-																// consumption
-																// level.
-			criteria.setAccuracy(Criteria.ACCURACY_FINE); // Choose your
-															// accuracy
-															// requirement.
-			criteria.setSpeedRequired(true); // Chose if speed for first
-												// location fix is required.
-			criteria.setAltitudeRequired(false); // Choose if you use altitude.
-			criteria.setBearingRequired(false); // Choose if you use bearing.
-			criteria.setCostAllowed(false); // Choose if this provider can waste
-											// money :-)
-
-			// Provide your criteria and flag enabledOnly that tells
-			// LocationManager only to return active providers.
-			return locationManager.getBestProvider(criteria, true);
-		}
-
-		/**
-		 * Make use of location after deciding if it is better than previous
-		 * one.
-		 *
-		 * @param location
-		 *            Newly acquired location.
-		 */
-		void doWorkWithNewLocation(Location location) {
-			if (isBetterLocation(instantLocation, location)) {
-				// If location is better, do some user preview.
-				Toast.makeText(getActivity(),
-						"Better location found: " + getProviderName(),
-						Toast.LENGTH_SHORT).show();
-			}
-
-			String lat = String.valueOf(instantLocation.getLatitude());
-			String lon = String.valueOf(instantLocation.getLongitude());
-			Log.e("GPS", "location changed: lat=" + lat + ", lon=" + lon);
-
-			pos.setText("Latitude: "
-					+ (double) Math.round(instantLocation.getLatitude() * 10000)
-					/ 10000
-					+ " Longitude: "
-					+ (double) Math.round(instantLocation.getLongitude() * 10000)
-					/ 10000);
-
-			String label = "Current location";
-			String uriBegin = "geo:" + lat + "," + lon;
-			String query = lat + "," + lon + "(" + label + ")";
-			String encodedQuery = Uri.encode(query);
-			String uriString = uriBegin + "?q=" + encodedQuery + "&z=16";
-			Uri uri = Uri.parse(uriString);
-
-			Intent mapIntent = new Intent(Intent.ACTION_VIEW, uri);
-
-			startActivity(mapIntent);
-
-		}
-
-		/**
-		 * Time difference threshold set for one minute.
-		 */
-		static final int TIME_DIFFERENCE_THRESHOLD = 1 * 60 * 1000;
-
-		/**
-		 * Decide if new location is better than older by following some basic
-		 * criteria. This algorithm can be as simple or complicated as your
-		 * needs dictate it. Try experimenting and get your best location
-		 * strategy algorithm.
-		 * 
-		 * @param oldLocation
-		 *            Old location used for comparison.
-		 * @param newLocation
-		 *            Newly acquired location compared to old one.
-		 * @return If new location is more accurate and suits your criteria more
-		 *         than the old one.
-		 */
-		boolean isBetterLocation(Location oldLocation, Location newLocation) {
-			// If there is no old location, of course the new location is
-			// better.
-			if (oldLocation == null) {
-				return true;
-			}
-
-			// Check if new location is newer in time.
-			boolean isNewer = newLocation.getTime() > oldLocation.getTime();
-
-			// Check if new location more accurate. Accuracy is radius in
-			// meters, so less is better.
-			boolean isMoreAccurate = newLocation.getAccuracy() < oldLocation
-					.getAccuracy();
-			if (isMoreAccurate && isNewer) {
-				// More accurate and newer is always better.
-				return true;
-			} else if (isMoreAccurate && !isNewer) {
-				// More accurate but not newer can lead to bad fix because of
-				// user movement.
-				// Let us set a threshold for the maximum tolerance of time
-				// difference.
-				long timeDifference = newLocation.getTime()
-						- oldLocation.getTime();
-
-				// If time difference is not greater then allowed threshold we
-				// accept it.
-				if (timeDifference > -TIME_DIFFERENCE_THRESHOLD) {
-					return true;
-				}
-			}
-
-			return false;
-		}
 	}
-
 }
