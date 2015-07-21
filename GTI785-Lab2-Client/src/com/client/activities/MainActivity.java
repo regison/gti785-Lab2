@@ -21,6 +21,7 @@ import android.app.AlertDialog;
 import android.app.AlertDialog.Builder;
 import android.app.Fragment;
 import android.app.FragmentManager;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -32,6 +33,7 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -46,6 +48,7 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.PopupMenu;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -72,6 +75,13 @@ public class MainActivity extends Activity implements
 	private static ListView generalListView;
 	private static final String PREFERENCES_APP_SERVEURS = "MyServerList";
 
+	ProgressBar prog;
+	ProgressDialog progressBar;
+	int progressBarStatus = 0;
+	Handler progressBarHandler = new Handler();
+	private long fileSize = 0;
+	private int sizeOfServerInMemory = 0;
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -92,7 +102,93 @@ public class MainActivity extends Activity implements
 		ArrayList<String> servers = new Gson().fromJson(
 				settings.getString("servers", ""), ArrayList.class);
 
-		ClientSideUtils.GetScannedDevicesFromSharedPreferences(servers);
+		sizeOfServerInMemory = servers.size();
+		if (servers != null && servers.size() > 0) {
+			startProgressBarOnServersLoading();
+
+			ClientSideUtils.GetScannedDevicesFromSharedPreferences(servers);
+		}
+
+	}
+
+	private void startProgressBarOnServersLoading() {
+		// TODO Auto-generated method stub
+		prog = (ProgressBar) this.findViewById(R.id.progBar);
+		progressBar = new ProgressDialog(this);
+		progressBar.setCancelable(true);
+		progressBar.setMessage("Chargement des serveurs sauvegardés ...");
+		progressBar.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+		progressBar.setProgress(0);
+		progressBar.setMax(100);
+		progressBar.show();
+
+		// reset progress bar status
+		progressBarStatus = 50;
+
+		new Thread(new Runnable() {
+			public void run() {
+				while (progressBarStatus < 100) {
+
+					//progressBarStatus = 50;
+					progressBarStatus += 5;
+					// process some tasks
+					//progressBarStatus = loadServersFromMemory();
+
+					// your computer is too fast, sleep 1 second
+					try {
+						Thread.sleep(1000);
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+
+					// Update the progress bar
+					progressBarHandler.post(new Runnable() {
+						public void run() {
+							progressBar.setProgress(progressBarStatus);
+						}
+					});
+				}
+
+				// ok, file is downloaded,
+				if (progressBarStatus >= 100) {
+
+					// sleep 2 seconds, so that you can see the 100%
+					try {
+						Thread.sleep(2000);
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+
+					// close the progress bar dialog
+					progressBar.dismiss();
+				}
+			}
+		}).start();
+
+	}
+
+	// file download simulator... a really simple
+	public int loadServersFromMemory() {
+
+		int compteur = 0;
+		
+		if (sizeOfServerInMemory == 0)
+			return 100;
+
+		else{
+			
+			if (compteur == 100000) {
+				return 20;
+			} else if (compteur == 200000) {
+				return 30;
+			} else if (compteur == 300000) {
+				return 90;
+			} 
+		}
+	
+
+		return 100;
+
 	}
 
 	private void getQrCodeServerPicture() {
@@ -249,6 +345,7 @@ public class MainActivity extends Activity implements
 
 			switch (section) {
 			case 1:
+
 				rootView = inflater.inflate(R.layout.fragment_servers,
 						container, false);
 
@@ -320,7 +417,7 @@ public class MainActivity extends Activity implements
 								if (currentSrv != null
 										&& currentSrv.isAvailable()) {
 
-									builder.setTitle("Choose an action")
+									builder.setTitle("Choisissez une action")
 											.setNegativeButton(
 													R.string.cancel,
 													new DialogInterface.OnClickListener() {

@@ -44,14 +44,7 @@ public class ServerAdapter extends ArrayAdapter<ServerObject> {
 		View serverView = convertView;
 		Boolean checkIsOnline = false;
 		ServerObject srv2  = getItem(position);
-		/*
-		ServerObject srv2 = null;
-		try {
-			srv2 = new LongPollingTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR,  getItem(position).toString() ).get();
-		} catch (InterruptedException | ExecutionException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}*/
+	
 		ViewHolderServer viewHolder;
 		
 		if (convertView == null) {	
