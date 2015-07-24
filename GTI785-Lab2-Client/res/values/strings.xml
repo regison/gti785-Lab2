@@ -16,6 +16,8 @@
     <string name="add">+</string>
     <string name="ipadress">Adresse courante de l\'appareil:</string>
     <string name="cancel">Annuler</string>
+    <string name="servername">Nom du serveur</string>
+    <string name="startDistance">0 km</string>
     
 
 </resources>

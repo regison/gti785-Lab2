@@ -1,4 +1,4 @@
-package com.client.localization;
+package com.client.utils;
 
 import android.app.Activity;
 import android.content.Context;
@@ -12,12 +12,12 @@ import android.util.Log;
 import android.widget.Toast;
 
 public class DeviceLocalisation extends Location implements LocationListener {
-	private Activity activity;
+	private static Activity activity;
 	private Location location;
 
 	public DeviceLocalisation(Location l, Activity activity) {
 		super(l);
-		this.activity = activity;
+		DeviceLocalisation.activity = activity;
 		this.location = l;
 
 		// TODO Auto-generated constructor stub
@@ -25,6 +25,16 @@ public class DeviceLocalisation extends Location implements LocationListener {
 
 	public Location getLocation() {
 		return location;
+	}
+	public void setLocation(Location location){
+		this.location = location;
+	}
+	
+	public Activity getActivity(){
+		return activity;
+	}
+	public void setActivity(Activity activity){
+		DeviceLocalisation.activity = activity;
 	}
 
 	public void onStatusChanged(String provider, int status, Bundle extras) {
@@ -55,8 +65,8 @@ public class DeviceLocalisation extends Location implements LocationListener {
 	 * @return Name of best suiting provider.
 	 * */
 
-	public String getProviderName() {
-		LocationManager locationManager = (LocationManager) activity
+	public static String getProviderName( LocationManager locationManager ) {
+		 locationManager = (LocationManager) activity
 				.getSystemService(Context.LOCATION_SERVICE);
 
 		Criteria criteria = new Criteria();
@@ -87,9 +97,10 @@ public class DeviceLocalisation extends Location implements LocationListener {
 	 */
 	public void doWorkWithNewLocation(Location newlocation) {
 		if (isBetterLocation(location, newlocation)) {
-			// If location is better, do some user preview.
+			// If location is better, do some user preview.			
+			setLocation(newlocation);
 			Toast.makeText(activity,
-					"Better location found: " + getProviderName(),
+					"Better location found: " ,
 					Toast.LENGTH_SHORT).show();
 		}
 
@@ -161,11 +172,11 @@ public class DeviceLocalisation extends Location implements LocationListener {
 		return false;
 	}
 
-	public void getLocationUpdates(LocationManager locationManager) {
-		long minTime = 5 * 1000; // Minimum time interval for update
+	public void getLocationUpdates(final LocationManager locationManager) {
+		final long minTime = 45 * 1000; // Minimum time interval for update
 		// in
 		// seconds, i.e. 5 seconds.
-		long minDistance = (long) 0.1; // Minimum distance change
+		final long minDistance = (long) 0.1; // Minimum distance change
 		// for
 		// update in meters, i.e. 10
 		// meters.
@@ -180,8 +191,17 @@ public class DeviceLocalisation extends Location implements LocationListener {
 		// provider name, criteria can be used, but we won't use
 		// those
 		// approaches now.
-		locationManager.requestLocationUpdates(getProviderName(), minTime,
-				minDistance, this);
+		activity.runOnUiThread( new Runnable(){
+
+			@Override
+			public void run() {
+				// TODO Auto-generated method stub
+				locationManager.requestLocationUpdates(getProviderName(locationManager), minTime,
+						minDistance, DeviceLocalisation.this);
+			}
+			
+		});
+		
 
 		// MapView mapView = (MapView)
 		// rootView.findViewById(R.id.map_view);

@@ -1,6 +1,7 @@
 package com.client.servermanager;
 
 import android.graphics.Bitmap;
+import android.location.Location;
 
 import java.net.InetAddress;
 import java.net.NetworkInterface;
@@ -21,6 +22,7 @@ public class MyServerQRInfo {
 	private String name;
 	private String address;
 	private int port;
+	public Location location;
 
 	private static final int WHITE = 0xFFFFFFFF;
 	private static final int BLACK = 0xFF000000;

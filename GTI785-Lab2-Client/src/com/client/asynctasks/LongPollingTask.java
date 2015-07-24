@@ -82,8 +82,7 @@ public class LongPollingTask extends AsyncTask<String, String, ServerObject> {
 			if (response == HttpURLConnection.HTTP_OK) {
 				// on fait le traitement de la requete
 				// on get la reponse du server et on etablit que son status est
-				// on
-				srvObj.setAvailable(true);
+	
 
 				content = conn.getInputStream();
 

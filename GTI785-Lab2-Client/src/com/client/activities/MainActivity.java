@@ -3,18 +3,22 @@ package com.client.activities;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.logging.Logger;
 
 import com.client.gti785_lab2.R;
-import com.client.localization.DeviceLocalisation;
 import com.client.servermanager.ServerAdapter;
 import com.client.servermanager.ServerManager;
 import com.client.servermanager.ServerObject;
-import com.client.utils.ClientSideUtils;
+import com.client.utils.Constants;
+import com.client.utils.Utils;
+import com.client.utils.DeviceLocalisation;
 import com.google.gson.Gson;
 import com.client.servermanager.MyServerNano;
 import com.client.servermanager.MyServerQRInfo;
 
+import fi.iki.elonen.NanoHTTPD;
 import android.app.Activity;
 import android.app.ActionBar;
 import android.app.AlertDialog;
@@ -31,6 +35,8 @@ import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
@@ -71,20 +77,21 @@ public class MainActivity extends Activity implements
 	// Fragment section id (1 = list of servers, 2= files for a servers, 3=
 	// localization)
 	private int sectionId;
-	private SharedPreferences settings;
+	private static SharedPreferences settings;
 	private static ListView generalListView;
-	private static final String PREFERENCES_APP_SERVEURS = "MyServerList";
 
+
+	private static Activity generalActivity = null;
 	ProgressBar prog;
 	ProgressDialog progressBar;
 	int progressBarStatus = 0;
 	Handler progressBarHandler = new Handler();
-	private long fileSize = 0;
-	private int sizeOfServerInMemory = 0;
+
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		setActivity( this );
 		setContentView(R.layout.activity_main);
 
 		mNavigationDrawerFragment = (NavigationDrawerFragment) getFragmentManager()
@@ -96,23 +103,22 @@ public class MainActivity extends Activity implements
 				(DrawerLayout) findViewById(R.id.drawer_layout));
 
 		// Restauration des informations des serveurs pris en photo
-		settings = getSharedPreferences(PREFERENCES_APP_SERVEURS, 0);
+		settings = getSharedPreferences(Constants.PREFERENCES_APP_SERVEURS, 0);
 
-		@SuppressWarnings("unchecked")
-		ArrayList<String> servers = new Gson().fromJson(
-				settings.getString("servers", ""), ArrayList.class);
+		//A 1, ca indique qu'il y a au moins un serveur de sauvegardé dans les preferences
+		if ( Utils.GetScannedDevicesFromSharedPreferences(settings) == 1)
+			startProgressBarOnServersLoading();		
+	}
 
-		sizeOfServerInMemory = servers.size();
-		if (servers != null && servers.size() > 0) {
-			startProgressBarOnServersLoading();
-
-			ClientSideUtils.GetScannedDevicesFromSharedPreferences(servers);
-		}
-
+	private void setActivity(MainActivity mainActivity) {
+		MainActivity.generalActivity = mainActivity;		
+	}
+	
+	public static Activity getActivity(){
+		return generalActivity;
 	}
 
 	private void startProgressBarOnServersLoading() {
-		// TODO Auto-generated method stub
 		prog = (ProgressBar) this.findViewById(R.id.progBar);
 		progressBar = new ProgressDialog(this);
 		progressBar.setCancelable(true);
@@ -123,20 +129,26 @@ public class MainActivity extends Activity implements
 		progressBar.show();
 
 		// reset progress bar status
-		progressBarStatus = 50;
+		progressBarStatus = 0;
 
-		new Thread(new Runnable() {
+		(new Thread(){
+			@Override
 			public void run() {
 				while (progressBarStatus < 100) {
 
-					//progressBarStatus = 50;
-					progressBarStatus += 5;
-					// process some tasks
-					//progressBarStatus = loadServersFromMemory();
-
-					// your computer is too fast, sleep 1 second
 					try {
-						Thread.sleep(1000);
+						sleep(200);
+						
+						MainActivity.this.runOnUiThread((new Runnable() {
+
+							@Override
+							public void run() {
+								// TODO Auto-generated method stub
+								progressBarStatus += 5;
+							
+							}}));
+				
+						
 					} catch (InterruptedException e) {
 						e.printStackTrace();
 					}
@@ -167,30 +179,7 @@ public class MainActivity extends Activity implements
 
 	}
 
-	// file download simulator... a really simple
-	public int loadServersFromMemory() {
-
-		int compteur = 0;
-		
-		if (sizeOfServerInMemory == 0)
-			return 100;
-
-		else{
-			
-			if (compteur == 100000) {
-				return 20;
-			} else if (compteur == 200000) {
-				return 30;
-			} else if (compteur == 300000) {
-				return 90;
-			} 
-		}
 	
-
-		return 100;
-
-	}
-
 	private void getQrCodeServerPicture() {
 
 		Intent takePictureIntent = new Intent(
@@ -204,31 +193,15 @@ public class MainActivity extends Activity implements
 
 	@Override
 	public void onActivityResult(int requestCode, int resultCode, Intent intent) {
-		// Bitmap mBitmap = null;
+
 		if (requestCode == 0) {
 			// Handle successfull scan
 			if (resultCode == RESULT_OK) {
 				String contents = intent.getStringExtra("SCAN_RESULT");
 				String format = intent.getStringExtra("SCAN_RESULT_FORMAT");
 				Toast.makeText(this, contents, Toast.LENGTH_LONG).show();
-
-				// We need an Editor object to make preference changes.
-				// All objects are from android.context.Context
-
-				SharedPreferences.Editor editor = settings.edit();
-
-				// add a separator to help retrieve all servers listed
-				String addserver = contents + ";";
-
+				//Add the last taken picture to the server
 				ServerManager.getInstance().addServerFromCode(contents);
-
-				editor.putString(
-						"servers",
-						new Gson().toJson(Arrays.asList(ServerManager
-								.getInstance().getServers().toString())));
-
-				// Commit the edits!
-				editor.commit();
 
 			} else if (resultCode == RESULT_CANCELED) {
 				// Handle cancel
@@ -307,6 +280,17 @@ public class MainActivity extends Activity implements
 		}
 		return super.onOptionsItemSelected(item);
 	}
+	
+	@Override
+	protected void onSaveInstanceState(Bundle state) {
+	    super.onSaveInstanceState(state);
+	    
+	    if (ServerManager.getInstance().getServers().size() > 0)
+	    	Utils.SaveCurrentServers(settings);
+	}
+
+
+
 
 	/**
 	 * A placeholder fragment containing a simple view.
@@ -327,7 +311,10 @@ public class MainActivity extends Activity implements
 		View rootView = null;
 		ArrayList<ServerObject> srvs = null;
 
+		Activity fragmentActivity = null;
+		
 		public static PlaceholderFragment newInstance(int sectionNumber) {
+			
 			section = sectionNumber;
 			PlaceholderFragment fragment = new PlaceholderFragment();
 			Bundle args = new Bundle();
@@ -343,23 +330,23 @@ public class MainActivity extends Activity implements
 		public View onCreateView(LayoutInflater inflater, ViewGroup container,
 				Bundle savedInstanceState) {
 
+			fragmentActivity =  this.getActivity();
+			
 			switch (section) {
 			case 1:
 
 				rootView = inflater.inflate(R.layout.fragment_servers,
-						container, false);
-
-				generalListView = (ListView) rootView
-						.findViewById(R.id.serversView);
+						container, false);		
+				
 
 				srvs = ServerManager.getInstance().getServers();
 
-				MainActivity.LOG.info("Servers available:" + srvs.size());
-
+				generalListView = (ListView) rootView
+						.findViewById(R.id.serversView);
 				break;
 			case 2:
-				rootView = inflater.inflate(R.layout.fragment_files, container,
-						false);
+				rootView = inflater.inflate(R.layout.fragment_files, 
+						container,	false);
 				break;
 			case 3:
 				rootView = inflater.inflate(R.layout.fragment_phone_position,
@@ -369,8 +356,6 @@ public class MainActivity extends Activity implements
 				rootView = inflater.inflate(R.layout.fragment_qrcode,
 						container, false);
 
-				// Toast.makeText(rootView.getContext(),
-				// "monserveur",Toast.LENGTH_LONG).show();
 				break;
 			}
 
@@ -392,14 +377,37 @@ public class MainActivity extends Activity implements
 
 			switch (section) {
 			case 1:
-				final Activity current = this.getActivity();
 
-				ServerAdapter adapter = new ServerAdapter(this.getActivity(),
-						srvs);
+				
+				//Load device Location
+				instantLocation = Utils.GetDeviceLocation(fragmentActivity);
+			
+				 final ServerAdapter adapter = new ServerAdapter(
+							fragmentActivity, instantLocation,
+							srvs);
 
-				generalListView.setAdapter(adapter);
-
-				adapter.notifyDataSetChanged();
+			final Button btnSortUp = (Button) rootView.findViewById(R.id.redbtn);
+			btnSortUp.setOnClickListener( new OnClickListener() {
+				
+				@Override
+				public void onClick(View v) {
+					Collections.sort(srvs, new ServerObject.SortServerByDistance(true));		
+					  
+					adapter.notifyDataSetChanged(); 
+				}
+			});
+			final Button btnSortDown = (Button) rootView.findViewById(R.id.btnSortDown);
+			btnSortDown.setOnClickListener( new OnClickListener() {
+				
+				@Override
+				public void onClick(View v) {
+					Collections.sort(srvs, new ServerObject.SortServerByDistance(false));	
+					
+					  adapter.notifyDataSetChanged(); 
+				}
+			});	
+				
+				generalListView.setAdapter(adapter);			
 
 				generalListView
 						.setOnItemClickListener(new OnItemClickListener() {
@@ -441,11 +449,15 @@ public class MainActivity extends Activity implements
 														public void onClick(
 																DialogInterface dialog,
 																int which) {
+															if (which == 2){
+																MainActivity.LOG.info("BUTTON2");
+															}
 															// TODO
 															// Auto-generated
 															// method stub
 															Toast.makeText(
-																	current,
+
+																	fragmentActivity,
 																	dialog.toString()
 																			+ " has been click!",
 																	Toast.LENGTH_LONG)
@@ -491,30 +503,21 @@ public class MainActivity extends Activity implements
 
 				break;
 			case 3:
+				//Load Location
+				instantLocation = Utils.GetDeviceLocation(fragmentActivity);
 				// Don't initialize location manager, retrieve it from system
 				// services.
-				LocationManager locationManager = (LocationManager) getActivity()
-						.getSystemService(Context.LOCATION_SERVICE);
+				
+				pos = (TextView) rootView.findViewById(R.id.phoneLocation);
+				  
+				
 
-				instantLocation = locationManager
-						.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-
-				DeviceLocalisation deviceLoc = new DeviceLocalisation(
-						instantLocation, this.getActivity());
-
-				if (instantLocation != null) {
-
-					pos = (TextView) rootView.findViewById(R.id.phoneLocation);
-
-					pos.setText("Latitude: "
-							+ (double) Math.round(instantLocation.getLatitude() * 10000)
-							/ 10000
-							+ " Longitude: "
-							+ (double) Math.round(instantLocation
-									.getLongitude() * 10000) / 10000);
-				}
-				deviceLoc.getLocationUpdates(locationManager);
-
+				pos.setText("Latitude: "
+						+ (double) Math.round(instantLocation.getLatitude() * 10000)
+						/ 10000
+						+ " Longitude: "
+						+ (double) Math.round(instantLocation
+								.getLongitude() * 10000) / 10000);
 				break;
 			case 4:
 
@@ -539,6 +542,16 @@ public class MainActivity extends Activity implements
 			((MainActivity) activity).onSectionAttached(getArguments().getInt(
 					ARG_SECTION_NUMBER));
 		}
-
+		
+		 // check network connection
+/*		public boolean isConnected() {
+			ConnectivityManager connMgr = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+			NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
+			if (networkInfo != null && networkInfo.isConnected())
+				return true;
+			else
+				return false;
+		}
+*/
 	}
 }

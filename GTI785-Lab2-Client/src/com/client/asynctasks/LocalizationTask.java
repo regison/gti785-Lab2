@@ -5,6 +5,7 @@ import android.location.*;
 
 public class LocalizationTask extends AsyncTask<String, String, Location> {
 
+	
 	@Override
 	protected Location doInBackground(String... params) {
 		// TODO Auto-generated method stub

@@ -21,7 +21,7 @@
             android:id="@+id/list_image"
             android:layout_width="50dip"
             android:layout_height="50dip"
-            android:contentDescription=""
+            android:contentDescription="@string/servername"
             android:src="@drawable/server_small" />
     </LinearLayout>
 
@@ -51,6 +51,7 @@
 
     <ImageView
         android:id="@+id/imageView1"
+        android:contentDescription="@string/servername"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentEnd="true"
@@ -63,18 +64,27 @@
         android:layout_height="wrap_content"
         android:layout_alignParentStart="false"
         android:layout_alignTop="@+id/serverName"
-        android:layout_marginEnd="20dip"
-        android:layout_marginRight="36dp"
-        android:layout_toLeftOf="@+id/imageView1"
+        android:layout_marginEnd="36dip"      
+        android:layout_toStartOf="@+id/imageView1"
         android:background="@drawable/imag_bg"
         android:padding="3dip" >
 
         <ToggleButton
             android:id="@+id/toggleButton1"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="ToggleButton" 
-            android:focusable="false"/>
+            android:layout_height="32dp"
+            android:focusable="false" />
+
     </LinearLayout>
+
+    <TextView
+        android:id="@+id/serverDistance"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@+id/serverUrl"
+        android:layout_toStartOf="@+id/imageView1"
+        android:text="@string/startDistance"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:textStyle="italic" />
 
 </RelativeLayout>

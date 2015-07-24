@@ -65,7 +65,7 @@ public class MyServerQRInfo {
 			else
 			 setAddress( getCurrentIpAddress().get(0) );
 			
-			BitMatrix byteMatrix = qrCodeWriter.encode( getAddress() +","+ port+ ", MonServeur",BarcodeFormat.QR_CODE, 750, 750, hintMap);
+			BitMatrix byteMatrix = qrCodeWriter.encode( getAddress() +"," + port + ",MonServeur",BarcodeFormat.QR_CODE, 750, 750, hintMap);
 			
 			
 			//Comme c un carré on peut juste utiliser la longueur

@@ -5,6 +5,15 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
+import android.app.Activity;
+import android.content.Context;
+import android.location.Location;
+import android.location.LocationManager;
+
+import com.client.activities.MainActivity;
+import com.client.utils.Utils;
+import com.client.utils.DeviceLocalisation;
+
 import fi.iki.elonen.NanoHTTPD;;
 
 public class MyServerNano extends NanoHTTPD{
@@ -57,7 +66,12 @@ public class MyServerNano extends NanoHTTPD{
         case HttpFunctions.GetFileList :  
         	response = param.size() + "" ;
         	break;  
-        case HttpFunctions.GetGeoPosition:        		
+        case HttpFunctions.GetGeoPosition:    
+        
+        	Activity currentAct = MainActivity.getActivity();    
+        	Location serverLocation = Utils.GetDeviceLocation( currentAct );
+        	response = String.valueOf( serverLocation.getLatitude()) +";" + String.valueOf( serverLocation.getLongitude());
+        	
         	break;
         case HttpFunctions.TransferFile : 
         	break;        	

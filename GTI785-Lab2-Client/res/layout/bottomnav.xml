@@ -30,48 +30,39 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_alignParentTop="true"
-                android:background="@drawable/selector"               
+                android:background="@drawable/selector"
+                android:gravity="center_vertical|center_horizontal"
                 android:paddingBottom="3dp"
                 android:paddingRight="9dp"
                 android:text="+"
-                android:textColor="#ffffff"
+                android:textColor="#000000"
                 android:textSize="25dp"
-                android:textStyle="bold" 
-                android:gravity="center_vertical|center_horizontal"/>
+                android:textStyle="bold" />
 
             <Button
-                android:id="@+id/button1"             
-                android:layout_toEndOf="@+id/redbtn"               
-                
-                 android:layout_width="wrap_content"
+                android:id="@+id/btnSortDown"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_alignParentTop="true"
-                android:background="@drawable/selector"               
+                android:layout_toEndOf="@+id/redbtn"
+                android:background="@drawable/selector"
+                android:gravity="center_vertical|center_horizontal"
                 android:paddingBottom="3dp"
                 android:paddingRight="9dp"
-                android:textColor="#ffffff"
+                android:text="@string/minus"
+                android:textColor="#000000"
                 android:textSize="25dp"
-                android:textStyle="bold"
-                android:text="@string/minus"                 
-                android:gravity="center_vertical|center_horizontal"/>
+                android:textStyle="bold" />
             
-            <Button
-                android:id="@+id/sort"             
-                android:layout_toEndOf="@+id/button1"               
-                
-                 android:layout_width="wrap_content"
+            <ImageButton
+                android:id="@+id/sort"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_alignParentTop="true"
-                             
+                android:layout_toEndOf="@+id/btnSortDown"
+                android:layout_toRightOf="@+id/btnSortDown"
                 android:paddingBottom="3dp"
-                
-                android:textColor="#ffffff"
-                
-                android:textStyle="bold"
-                android:background="@drawable/sort"                
-                android:gravity="center_vertical|center_horizontal"/>
-            
-            
+                android:src="@drawable/sort" />
 
         </RelativeLayout>
 

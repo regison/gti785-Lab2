@@ -6,6 +6,7 @@ public class ViewHolderServer {
 
 	private TextView serverName;
 	private TextView serverURL;
+	private TextView serverDistance;
 	public TextView getServerName() {
 		return serverName;
 	}
@@ -17,5 +18,11 @@ public class ViewHolderServer {
 	}
 	public void setServerURL(TextView serverURL) {
 		this.serverURL = serverURL;
+	}
+	public TextView getServerDistance() {
+		return serverDistance;
+	}
+	public void setServerDistance(TextView serverDistance) {
+		this.serverDistance = serverDistance;
 	}
 }
