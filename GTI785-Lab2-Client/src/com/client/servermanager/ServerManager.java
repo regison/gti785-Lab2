@@ -84,7 +84,6 @@ public class ServerManager  {
 	}
 	
 	public static Boolean getStatusOfServer(String url){
-
 	        try {	 
 	  
 	        	StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder()

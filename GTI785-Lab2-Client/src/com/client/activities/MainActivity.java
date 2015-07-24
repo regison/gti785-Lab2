@@ -312,6 +312,7 @@ public class MainActivity extends Activity implements
 		ArrayList<ServerObject> srvs = null;
 
 		Activity fragmentActivity = null;
+		 int positionDansListe;
 		
 		public static PlaceholderFragment newInstance(int sectionNumber) {
 			
@@ -374,11 +375,11 @@ public class MainActivity extends Activity implements
 		@Override
 		public void onActivityCreated(Bundle savedInstanceState) {
 			super.onActivityCreated(savedInstanceState);
+			
+		
 
 			switch (section) {
-			case 1:
-
-				
+			case 1:				
 				//Load device Location
 				instantLocation = Utils.GetDeviceLocation(fragmentActivity);
 			
@@ -416,6 +417,7 @@ public class MainActivity extends Activity implements
 							public void onItemClick(AdapterView<?> parent,
 									View view, int position, long id) {
 
+								positionDansListe = position;
 								ServerObject currentSrv = (ServerObject) generalListView
 										.getAdapter().getItem(position);
 
@@ -449,9 +451,39 @@ public class MainActivity extends Activity implements
 														public void onClick(
 																DialogInterface dialog,
 																int which) {
-															if (which == 2){
-																MainActivity.LOG.info("BUTTON2");
-															}
+															
+													switch (which){
+													case 0:														
+														// open bluetooth if not open
+														break;
+													case  1:
+														//Message confiramtion
+														 new AlertDialog.Builder(generalListView.getContext())
+													        .setIcon(android.R.drawable.ic_dialog_alert)
+													        .setTitle("Supprimer serveur")
+													        .setMessage("Voulex-vous vraiment supprimer ce serveur?")
+													        .setPositiveButton("Oui", new DialogInterface.OnClickListener()
+													    { 
+													        @Override 
+													        public void onClick(DialogInterface dialog, int which) {
+													           // finish();    
+													        	if( which == -1){
+													        	
+													        	srvs.remove( positionDansListe );
+													        	adapter.notifyDataSetChanged();													     
+													     	    	
+													        	Utils.SaveCurrentServers(settings);
+													        	 
+													        	}
+													        } 
+													 
+													    }) 
+													    .setNegativeButton("Non", null)
+													    .show();
+														//delete servers from listView
+														//refresh adapater
+														break;
+													}
 															// TODO
 															// Auto-generated
 															// method stub
@@ -505,12 +537,8 @@ public class MainActivity extends Activity implements
 			case 3:
 				//Load Location
 				instantLocation = Utils.GetDeviceLocation(fragmentActivity);
-				// Don't initialize location manager, retrieve it from system
-				// services.
-				
-				pos = (TextView) rootView.findViewById(R.id.phoneLocation);
-				  
-				
+		
+				pos = (TextView) rootView.findViewById(R.id.phoneLocation);			
 
 				pos.setText("Latitude: "
 						+ (double) Math.round(instantLocation.getLatitude() * 10000)
