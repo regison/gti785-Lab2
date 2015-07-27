@@ -25,6 +25,7 @@ import android.app.AlertDialog;
 import android.app.AlertDialog.Builder;
 import android.app.Fragment;
 import android.app.FragmentManager;
+import android.app.FragmentTransaction;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -334,29 +335,39 @@ public class MainActivity extends Activity implements
 			fragmentActivity =  this.getActivity();
 			
 			switch (section) {
+			//même view mais sur des fragments différentes avec des composants différents
+			
+			//fragment pour la liste des serveurs
 			case 1:
 
 				rootView = inflater.inflate(R.layout.fragment_servers,
-						container, false);		
-				
+						container, false);					
 
 				srvs = ServerManager.getInstance().getServers();
 
 				generalListView = (ListView) rootView
 						.findViewById(R.id.serversView);
 				break;
+				//fragment pour la liste des fichiers d'un serveur actif
 			case 2:
 				rootView = inflater.inflate(R.layout.fragment_files, 
 						container,	false);
 				break;
+				//fragment pour la position de l'appareil
 			case 3:
 				rootView = inflater.inflate(R.layout.fragment_phone_position,
 						container, false);
 				break;
+				//fragment pour la communication bluetooth
 			case 4:
-				rootView = inflater.inflate(R.layout.fragment_qrcode,
+				rootView = inflater.inflate(R.layout.fragment_bluetooth,
 						container, false);
 
+				break;
+				//fragment pour la génération du code QR
+			case 5: 
+				rootView = inflater.inflate(R.layout.fragment_qrcode,
+						container, false);
 				break;
 			}
 
@@ -379,6 +390,7 @@ public class MainActivity extends Activity implements
 		
 
 			switch (section) {
+			//liste des serveurs
 			case 1:				
 				//Load device Location
 				instantLocation = Utils.GetDeviceLocation(fragmentActivity);
@@ -421,6 +433,13 @@ public class MainActivity extends Activity implements
 								ServerObject currentSrv = (ServerObject) generalListView
 										.getAdapter().getItem(position);
 
+								 
+				               /*     FragmentTransaction ft = getFragmentManager().beginTransaction();
+				                    ft.replace(R.id.filesView, new FileListFragmentView());
+				                    ft.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE); 
+				                    ft.addToBackStack(null); 
+				                    ft.commit(); 
+				                    */
 								AlertDialog.Builder builder = new Builder(view
 										.getContext());
 
@@ -443,20 +462,23 @@ public class MainActivity extends Activity implements
 														}
 													})
 											.setItems(
-													new String[] { "Paired",
+													new String[] { "Voir liste de fichiers","Pair",
 															"Supprimer" },
 													new DialogInterface.OnClickListener() {
 
 														@Override
 														public void onClick(
 																DialogInterface dialog,
-																int which) {
+																int menuOption) {
 															
-													switch (which){
+													switch (menuOption){
 													case 0:														
-														// open bluetooth if not open
+												//open file adapter
 														break;
 													case  1:
+														// open bluetooth if not open
+														break;
+													case 2:
 														//Message confiramtion
 														 new AlertDialog.Builder(generalListView.getContext())
 													        .setIcon(android.R.drawable.ic_dialog_alert)
@@ -498,9 +520,9 @@ public class MainActivity extends Activity implements
 														}
 													});
 								} else {
-									builder.setTitle("Impossible de pairer")
-											.setMessage(
-													"Ce serveur ne peut être pairé,\n car il est hors ligne")
+									builder.setTitle("Ce serveur ne peut être pairé,\n car il est hors ligne")
+											//.setMessage(
+												//	"Ce serveur ne peut être pairé,\n car il est hors ligne")
 											.setNegativeButton(
 													R.string.cancel,
 													new DialogInterface.OnClickListener() {
@@ -511,7 +533,59 @@ public class MainActivity extends Activity implements
 																int which) {
 														}
 
-													});
+													})
+													.setItems(
+															new String[] {"Supprimer" },
+															new DialogInterface.OnClickListener() {
+
+																@Override
+																public void onClick(
+																		DialogInterface dialog,
+																		int menuOption) {
+																	
+															switch (menuOption){
+															case 0:														
+																//Message confiramtion
+																 new AlertDialog.Builder(generalListView.getContext())
+															        .setIcon(android.R.drawable.ic_dialog_alert)
+															        .setTitle("Supprimer serveur")
+															        .setMessage("Voulex-vous vraiment supprimer ce serveur?")
+															        .setPositiveButton("Oui", new DialogInterface.OnClickListener()
+															    { 
+															        @Override 
+															        public void onClick(DialogInterface dialog, int which) {
+															           // finish();    
+															        	if( which == -1){
+															        	
+															        	srvs.remove( positionDansListe );
+															        	adapter.notifyDataSetChanged();													     
+															     	    	
+															        	Utils.SaveCurrentServers(settings);
+															        	 
+															        	}
+															        } 
+															 
+															    }																
+															) 
+															    .setNegativeButton("Non", null)
+															    .show();
+																//delete servers from listView
+																//refresh adapater
+																break;
+															}
+																	// TODO
+																	// Auto-generated
+																	// method stub
+																	Toast.makeText(
+
+																			fragmentActivity,
+																			dialog.toString()
+																					+ " has been click!",
+																			Toast.LENGTH_LONG)
+																			.show();
+
+																}
+															});
 								}
 
 								builder.create().show();
@@ -531,14 +605,16 @@ public class MainActivity extends Activity implements
 						});
 
 				break;
+				//listing des fichiers du serveur sélectionné
 			case 2:
 
 				break;
+				//Affichage de la localisation
 			case 3:
 				//Load Location
 				instantLocation = Utils.GetDeviceLocation(fragmentActivity);
 		
-				pos = (TextView) rootView.findViewById(R.id.phoneLocation);			
+				pos = (TextView) rootView.findViewById(R.id.location);			
 
 				pos.setText("Latitude: "
 						+ (double) Math.round(instantLocation.getLatitude() * 10000)
@@ -547,8 +623,14 @@ public class MainActivity extends Activity implements
 						+ (double) Math.round(instantLocation
 								.getLongitude() * 10000) / 10000);
 				break;
+				//Parti du bluetooth
 			case 4:
 
+			
+				break;
+				//Generation du code QR
+			case 5:
+				
 				MyServerNano msn = new MyServerNano();
 				MyServerQRInfo msqi = new MyServerQRInfo();
 				try {

@@ -17,6 +17,7 @@ import android.os.Bundle;
 import android.provider.Settings;
 import android.provider.Settings.SettingNotFoundException;
 import android.text.TextUtils;
+import android.util.Log;
 
 import com.client.servermanager.ServerManager;
 import com.client.servermanager.ServerObject;
@@ -93,61 +94,126 @@ public class Utils {
 
 	public static Location GetDeviceLocation(Activity current) {
 
+		boolean isGPSEnabled, isNetworkEnabled;
 		// boolean isenable = isLocationEnabled(current);
 		LocationManager locationManager = (LocationManager) current
-				.getSystemService(Context.LOCATION_SERVICE);
+				.getSystemService(Context.LOCATION_SERVICE);		
+	
+		// getting GPS status 
+        isGPSEnabled = locationManager 
+                .isProviderEnabled(LocationManager.GPS_PROVIDER);
+ 
+        // getting network status 
+        isNetworkEnabled = locationManager 
+                .isProviderEnabled(LocationManager.NETWORK_PROVIDER);
+        
 
-		Location loc = locationManager
+
+		Location loc =  locationManager
 				.getLastKnownLocation(LocationManager.PASSIVE_PROVIDER);
-		if (loc == null) {
-			locationManager.requestLocationUpdates(
-					LocationManager.GPS_PROVIDER, 0, 0, new LocationListener() {
+        
+        if (!isGPSEnabled && !isNetworkEnabled) { 
+            // no network provider is enabled 
+        } else {             
+            if (isNetworkEnabled) { 
+            	
+            	if (loc == null){
+                locationManager.requestLocationUpdates( 
+                        LocationManager.NETWORK_PROVIDER,
+                        5, 
+                        5, new LocationListener() {
 
-						@Override
-						public void onStatusChanged(String provider,
-								int status, Bundle extras) {
-							// TODO Auto-generated method stub
+    						@Override
+    						public void onStatusChanged(String provider,
+    								int status, Bundle extras) {
+    							// TODO Auto-generated method stub
 
-						}
+    						}
 
-						@Override
-						public void onProviderEnabled(String provider) {
-							// TODO Auto-generated method stub
+    						@Override
+    						public void onProviderEnabled(String provider) {
+    							// TODO Auto-generated method stub
 
-						}
+    						}
 
-						@Override
-						public void onProviderDisabled(String provider) {
-							// TODO Auto-generated method stub
+    						@Override
+    						public void onProviderDisabled(String provider) {
+    							// TODO Auto-generated method stub
 
-						}
+    						}
 
-						@Override
-						public void onLocationChanged(Location location) {
-							// TODO Auto-generated method stub
+    						@Override
+    						public void onLocationChanged(Location location) {
+    							// TODO Auto-generated method stub
 
-						}
-					});
+    						}
+    					});
+            	}
+                //MainActivity.Log.d("Network", "Network Enabled");
+                if (locationManager != null) { 
+                    loc = locationManager 
+                            .getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+                    if (loc != null) { 
+                    	DeviceLocalisation deviceLoc = new DeviceLocalisation(loc, current);
+                    	deviceLoc.setLocation(loc);
 
-			loc = locationManager
-					.getLastKnownLocation(LocationManager.PASSIVE_PROVIDER);
-		}
+                		deviceLoc.getLocationUpdates(locationManager);
+                		
+                		return loc;
+                    } 
+                } 
+            } 
+            // if GPS Enabled get lat/long using GPS Services 
+            if (isGPSEnabled) { 
+                if (loc == null) { 
+                	locationManager.requestLocationUpdates( 
+                            LocationManager.GPS_PROVIDER,
+                            5, 
+                            5, new LocationListener() {
 
-		DeviceLocalisation deviceLoc = new DeviceLocalisation(loc, current);
+        						@Override
+        						public void onStatusChanged(String provider,
+        								int status, Bundle extras) {
+        							// TODO Auto-generated method stub
 
-		String bestProviderForDevice = DeviceLocalisation
-				.getProviderName(locationManager);
+        						}
 
-		// Location instantLocation = locationManager
-		// .getLastKnownLocation(bestProviderForDevice);
+        						@Override
+        						public void onProviderEnabled(String provider) {
+        							// TODO Auto-generated method stub
 
-		if (loc != null)
-			deviceLoc.setLocation(loc);
+        						}
 
-		deviceLoc.getLocationUpdates(locationManager);
+        						@Override
+        						public void onProviderDisabled(String provider) {
+        							// TODO Auto-generated method stub
 
+        						}
+
+        						@Override
+        						public void onLocationChanged(Location location) {
+        							// TODO Auto-generated method stub
+
+        						}
+        					});
+                    Log.d("GPS", "GPS Enabled");
+                    if (locationManager != null) { 
+                        loc = locationManager 
+                                .getLastKnownLocation(LocationManager.GPS_PROVIDER);
+                        if (loc != null) { 
+                        	DeviceLocalisation deviceLoc = new DeviceLocalisation(loc, current);
+                        	deviceLoc.setLocation(loc);
+
+                    		deviceLoc.getLocationUpdates(locationManager);
+                    		return loc;
+                        } 
+                    } 
+                } 
+            } 
+        }
+ 
+		
 		return loc;
-
 	}
 
 	public static boolean isLocationEnabled(Context context) {

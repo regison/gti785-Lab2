@@ -63,11 +63,11 @@ public class MyServerQRInfo {
 
 			QRCodeWriter qrCodeWriter = new QRCodeWriter();
 			if (getCurrentIpAddress().get(0).equals("192.168.56.101"))
-				 setAddress( "10.0.2.2" );
+				 setAddress( "10.0.3.15" );
 			else
 			 setAddress( getCurrentIpAddress().get(0) );
 			
-			BitMatrix byteMatrix = qrCodeWriter.encode( getAddress() +","+ port+ ", MonServeur",BarcodeFormat.QR_CODE, 750, 750, hintMap);
+			BitMatrix byteMatrix = qrCodeWriter.encode( getAddress() +","+ port+ ",MonServeur",BarcodeFormat.QR_CODE, 750, 750, hintMap);
 			
 			
 			//Comme c un carré on peut juste utiliser la longueur

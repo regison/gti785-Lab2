@@ -8,11 +8,9 @@ public class File {
 	public File (){
 		
 	}
-	
 	public File (String name){
 		this.name=name;
-	}
-	
+	}	
 	public String getName() {
 		return name;
 	}
