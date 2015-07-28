@@ -122,6 +122,10 @@ public class MainActivity extends Activity implements
 		settings = getSharedPreferences(Constants.PREFERENCES_APP_SERVEURS, 0);
 
 		// En ouvrant l'application client, on ouvre aussi le cote serveur
+		if (msqi != null){
+			msqi = null;
+		
+		}
 		msqi = Utils.LaunchServer();
 
 		// A 1, ca indique qu'il y a au moins un serveur de sauvegardé dans les
@@ -227,6 +231,7 @@ public class MainActivity extends Activity implements
 		switch (item.getItemId()) {
 		case R.id.transfer:
 			WifiManager wm = (WifiManager) getSystemService(WIFI_SERVICE);
+			
 			@SuppressWarnings("deprecation")
 			String ip = Formatter.formatIpAddress(wm.getConnectionInfo()
 					.getIpAddress());
@@ -809,7 +814,6 @@ public class MainActivity extends Activity implements
 				break;
 			// Generation du code QR
 			case 5:
-
 				showCurrentQrCode(msqi, rootView);
 				break;
 			}
