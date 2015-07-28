@@ -41,16 +41,16 @@ public class FileAdapter extends ArrayAdapter<File> {
 		// to fix when adding a new server
 		View fileView = convertView;		
 
-		VIewHolderFile viewHolder;
+		ViewHolderFile viewHolder;
 
 		if (convertView == null) {
 			fileView = inflater.inflate(R.layout.file_on_device, parent, false);
 
-			viewHolder = new VIewHolderFile();
-			viewHolder.setFilePath((TextView) fileView
-					.findViewById(R.id.filepath));
+			viewHolder = new ViewHolderFile();
 			viewHolder.setFileName((TextView) fileView
 					.findViewById(R.id.filename));
+			viewHolder.setFilePath((TextView) fileView
+					.findViewById(R.id.filepath));			
 			viewHolder.setFileSize((TextView) fileView
 					.findViewById(R.id.fileSize));
 			viewHolder.getFileName().setText(filesFromServer.get(position).getName()); 
@@ -61,7 +61,7 @@ public class FileAdapter extends ArrayAdapter<File> {
 
 			fileView.setTag(viewHolder);
 		} else {
-			viewHolder = (VIewHolderFile) fileView.getTag();
+			viewHolder = (ViewHolderFile) fileView.getTag();
 		}
 	
 		return fileView;

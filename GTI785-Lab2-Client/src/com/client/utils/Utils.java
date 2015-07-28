@@ -1,6 +1,9 @@
 package com.client.utils;
 
 import java.io.File;
+import java.io.IOException;
+import java.net.FileNameMap;
+import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -18,6 +21,8 @@ import android.provider.Settings.SettingNotFoundException;
 import android.text.TextUtils;
 import android.util.Log;
 
+import com.client.servermanager.MyServerNano;
+import com.client.servermanager.MyServerQRInfo;
 import com.client.servermanager.ServerManager;
 import com.client.servermanager.ServerObject;
 import com.google.gson.Gson;
@@ -57,7 +62,7 @@ public class Utils {
 										test.get("serverPort").toString()
 												.length() - 2);
 						server.setUrl(test.get("URL").toString());
-						server.setAvailable((boolean) test.get("isAvailable"));
+						server.setAvailable(ServerManager.getStatusOfServer(server.getURL()+"status"));
 						server.setServerName(test.get("serverName").toString());
 						server.setServerPort(Integer.parseInt(test2));
 						server.setServerIPAdress(test.get("serverIPAdress")
@@ -96,122 +101,119 @@ public class Utils {
 		boolean isGPSEnabled, isNetworkEnabled;
 		// boolean isenable = isLocationEnabled(current);
 		LocationManager locationManager = (LocationManager) current
-				.getSystemService(Context.LOCATION_SERVICE);		
-	
-		// getting GPS status 
-        isGPSEnabled = locationManager 
-                .isProviderEnabled(LocationManager.GPS_PROVIDER);
- 
-        // getting network status 
-        isNetworkEnabled = locationManager 
-                .isProviderEnabled(LocationManager.NETWORK_PROVIDER);
-        
+				.getSystemService(Context.LOCATION_SERVICE);
 
+		// getting GPS status
+		isGPSEnabled = locationManager
+				.isProviderEnabled(LocationManager.GPS_PROVIDER);
 
-		Location loc =  locationManager
+		// getting network status
+		isNetworkEnabled = locationManager
+				.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
+
+		Location loc = locationManager
 				.getLastKnownLocation(LocationManager.PASSIVE_PROVIDER);
-        
-        if (!isGPSEnabled && !isNetworkEnabled) { 
-            // no network provider is enabled 
-        } else {             
-            if (isNetworkEnabled) { 
-            	
-            	if (loc == null){
-                locationManager.requestLocationUpdates( 
-                        LocationManager.NETWORK_PROVIDER,
-                        5, 
-                        5, new LocationListener() {
 
-    						@Override
-    						public void onStatusChanged(String provider,
-    								int status, Bundle extras) {
-    							// TODO Auto-generated method stub
+		if (!isGPSEnabled && !isNetworkEnabled) {
+			// no network provider is enabled
+		} else {
+			if (isNetworkEnabled) {
 
-    						}
+				if (loc == null) {
+					locationManager.requestLocationUpdates(
+							LocationManager.NETWORK_PROVIDER, 5, 5,
+							new LocationListener() {
 
-    						@Override
-    						public void onProviderEnabled(String provider) {
-    							// TODO Auto-generated method stub
+								@Override
+								public void onStatusChanged(String provider,
+										int status, Bundle extras) {
+									// TODO Auto-generated method stub
 
-    						}
+								}
 
-    						@Override
-    						public void onProviderDisabled(String provider) {
-    							// TODO Auto-generated method stub
+								@Override
+								public void onProviderEnabled(String provider) {
+									// TODO Auto-generated method stub
 
-    						}
+								}
 
-    						@Override
-    						public void onLocationChanged(Location location) {
-    							// TODO Auto-generated method stub
+								@Override
+								public void onProviderDisabled(String provider) {
+									// TODO Auto-generated method stub
 
-    						}
-    					});
-            	}
-                //MainActivity.Log.d("Network", "Network Enabled");
-                if (locationManager != null) { 
-                    loc = locationManager 
-                            .getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
-                    if (loc != null) { 
-                    	DeviceLocalisation deviceLoc = new DeviceLocalisation(loc, current);
-                    	deviceLoc.setLocation(loc);
+								}
 
-                		deviceLoc.getLocationUpdates(locationManager);
-                		
-                		return loc;
-                    } 
-                } 
-            } 
-            // if GPS Enabled get lat/long using GPS Services 
-            if (isGPSEnabled) { 
-                if (loc == null) { 
-                	locationManager.requestLocationUpdates( 
-                            LocationManager.GPS_PROVIDER,
-                            5, 
-                            5, new LocationListener() {
+								@Override
+								public void onLocationChanged(Location location) {
+									// TODO Auto-generated method stub
 
-        						@Override
-        						public void onStatusChanged(String provider,
-        								int status, Bundle extras) {
-        							// TODO Auto-generated method stub
+								}
+							});
+				}
+				// MainActivity.Log.d("Network", "Network Enabled");
+				if (locationManager != null) {
+					loc = locationManager
+							.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+					if (loc != null) {
+						DeviceLocalisation deviceLoc = new DeviceLocalisation(
+								loc, current);
+						deviceLoc.setLocation(loc);
 
-        						}
+						deviceLoc.getLocationUpdates(locationManager);
 
-        						@Override
-        						public void onProviderEnabled(String provider) {
-        							// TODO Auto-generated method stub
+						return loc;
+					}
+				}
+			}
+			// if GPS Enabled get lat/long using GPS Services
+			if (isGPSEnabled) {
+				if (loc == null) {
+					locationManager.requestLocationUpdates(
+							LocationManager.GPS_PROVIDER, 5, 5,
+							new LocationListener() {
 
-        						}
+								@Override
+								public void onStatusChanged(String provider,
+										int status, Bundle extras) {
+									// TODO Auto-generated method stub
 
-        						@Override
-        						public void onProviderDisabled(String provider) {
-        							// TODO Auto-generated method stub
+								}
 
-        						}
+								@Override
+								public void onProviderEnabled(String provider) {
+									// TODO Auto-generated method stub
 
-        						@Override
-        						public void onLocationChanged(Location location) {
-        							// TODO Auto-generated method stub
+								}
 
-        						}
-        					});
-                    Log.d("GPS", "GPS Enabled");
-                    if (locationManager != null) { 
-                        loc = locationManager 
-                                .getLastKnownLocation(LocationManager.GPS_PROVIDER);
-                        if (loc != null) { 
-                        	DeviceLocalisation deviceLoc = new DeviceLocalisation(loc, current);
-                        	deviceLoc.setLocation(loc);
+								@Override
+								public void onProviderDisabled(String provider) {
+									// TODO Auto-generated method stub
 
-                    		deviceLoc.getLocationUpdates(locationManager);
-                    		return loc;
-                        } 
-                    } 
-                } 
-            } 
-        }
- 
-		
+								}
+
+								@Override
+								public void onLocationChanged(Location location) {
+									// TODO Auto-generated method stub
+
+								}
+							});
+					Log.d("GPS", "GPS Enabled");
+					if (locationManager != null) {
+						loc = locationManager
+								.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+						if (loc != null) {
+							DeviceLocalisation deviceLoc = new DeviceLocalisation(
+									loc, current);
+							deviceLoc.setLocation(loc);
+
+							deviceLoc.getLocationUpdates(locationManager);
+							return loc;
+						}
+					}
+				}
+			}
+		}
+
 		return loc;
 	}
 
@@ -255,22 +257,48 @@ public class Utils {
 
 	public static String GetFiles() {
 		// TODO Auto-generated method stub
-		File root = new File(Environment.DIRECTORY_DOWNLOADS);
+		File root = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).toString());
 		String sFiles = null;
-		final File[] files =  root.listFiles();
-		
-		for(File f : files){
+		final File[] files = root.listFiles();
 
-			if (f.isFile()){
-				if (files.length == 1)
-				sFiles = f.getAbsolutePath();
-				else
-					sFiles += f.getAbsolutePath() +",";			
+		if (files.length > 0) {
+			for (File f : files) {
+
+				if (f.isFile()) {
+					if (files.length == 1)
+						sFiles = f.getAbsolutePath();
+					else
+						sFiles += f.getAbsolutePath() + ",";
+				}
 			}
 		}
-			
-		
+
 		return sFiles;
+	}
+
+	public static MyServerQRInfo LaunchServer() {
+		// TODO Auto-generated method stub
+		MyServerNano msn = new MyServerNano();
+		MyServerQRInfo msqi = new MyServerQRInfo();
+		try {
+			msn.start();
+			msqi.setPort(msn.getListeningPort());
+
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		return msqi;
+	}
+	
+	public static void DownloadFileIntoDevice(String payload){
+		
+		String[] sub = payload.split("storage");
+		
+		
+		FileNameMap fileNameMap = URLConnection.getFileNameMap();
+		String mimeType = fileNameMap.getContentTypeFor("/storage" + sub[1]);
 	}
 
 }

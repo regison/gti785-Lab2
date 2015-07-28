@@ -8,8 +8,8 @@ public class File {
 	public File (){
 		
 	}
-	public File (String name){
-		this.name=name;
+	public File (String path){
+		this.filePath = path;
 	}	
 	public String getName() {
 		return name;

@@ -42,22 +42,29 @@ import android.location.LocationManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
+import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.os.Handler;
+import android.text.format.Formatter;
 import android.util.Log;
+import android.view.ContextMenu;
+import android.view.ContextMenu.ContextMenuInfo;
 import android.view.LayoutInflater;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.support.v4.widget.DrawerLayout;
 import android.widget.AdapterView;
+import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.PopupMenu;
+import android.widget.PopupMenu.OnMenuItemClickListener;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -84,7 +91,11 @@ public class MainActivity extends Activity implements
 	private static SharedPreferences settings;
 	private static ListView generalListView;
 	private static ServerObject currentSelectedServeur;
-
+	private static MyServerQRInfo msqi;
+	private static ArrayList<File> files;
+	private static ArrayList<ServerObject> srvs = null;
+	private static int sortAscendant = 1;
+	File f;
 
 	private static Activity generalActivity = null;
 	ProgressBar prog;
@@ -92,17 +103,17 @@ public class MainActivity extends Activity implements
 	int progressBarStatus = 0;
 	Handler progressBarHandler = new Handler();
 
-
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setActivity( this );
+		setActivity(this);
 		setContentView(R.layout.activity_main);
 
 		mNavigationDrawerFragment = (NavigationDrawerFragment) getFragmentManager()
 				.findFragmentById(R.id.navigation_drawer);
 		mTitle = getTitle();
 
+		//getActionBar().setDisplayHomeAsUpEnabled(false);
 		// Set up the drawer.
 		mNavigationDrawerFragment.setUp(R.id.navigation_drawer,
 				(DrawerLayout) findViewById(R.id.drawer_layout));
@@ -110,16 +121,20 @@ public class MainActivity extends Activity implements
 		// Restauration des informations des serveurs pris en photo
 		settings = getSharedPreferences(Constants.PREFERENCES_APP_SERVEURS, 0);
 
-		//A 1, ca indique qu'il y a au moins un serveur de sauvegardé dans les preferences
-		if ( Utils.GetScannedDevicesFromSharedPreferences(settings) == 1)
-			startProgressBarOnServersLoading();		
+		// En ouvrant l'application client, on ouvre aussi le cote serveur
+		msqi = Utils.LaunchServer();
+
+		// A 1, ca indique qu'il y a au moins un serveur de sauvegardé dans les
+		// preferences
+		if (Utils.GetScannedDevicesFromSharedPreferences(settings) == 1)
+			startProgressBarOnServersLoading();
 	}
 
 	private void setActivity(MainActivity mainActivity) {
-		MainActivity.generalActivity = mainActivity;		
+		MainActivity.generalActivity = mainActivity;
 	}
-	
-	public static Activity getActivity(){
+
+	public static Activity getActivity() {
 		return generalActivity;
 	}
 
@@ -136,24 +151,24 @@ public class MainActivity extends Activity implements
 		// reset progress bar status
 		progressBarStatus = 0;
 
-		(new Thread(){
+		(new Thread() {
 			@Override
 			public void run() {
 				while (progressBarStatus < 100) {
 
 					try {
 						sleep(200);
-						
+
 						MainActivity.this.runOnUiThread((new Runnable() {
 
 							@Override
 							public void run() {
 								// TODO Auto-generated method stub
 								progressBarStatus += 5;
-							
-							}}));
-				
-						
+
+							}
+						}));
+
 					} catch (InterruptedException e) {
 						e.printStackTrace();
 					}
@@ -184,7 +199,6 @@ public class MainActivity extends Activity implements
 
 	}
 
-	
 	private void getQrCodeServerPicture() {
 
 		Intent takePictureIntent = new Intent(
@@ -197,6 +211,51 @@ public class MainActivity extends Activity implements
 	}
 
 	@Override
+	public void onCreateContextMenu(ContextMenu menu, View v,
+			ContextMenuInfo menuInfo) {
+		super.onCreateContextMenu(menu, v, menuInfo);
+		if (v.getId() == R.id.filesView) {
+			MenuInflater inflater = getMenuInflater();
+			inflater.inflate(R.menu.menu_file, menu);
+		}
+	}
+
+	@Override
+	public boolean onContextItemSelected(MenuItem item) {
+		AdapterContextMenuInfo info = (AdapterContextMenuInfo) item
+				.getMenuInfo();
+		switch (item.getItemId()) {
+		case R.id.transfer:
+			WifiManager wm = (WifiManager) getSystemService(WIFI_SERVICE);
+			@SuppressWarnings("deprecation")
+			String ip = Formatter.formatIpAddress(wm.getConnectionInfo()
+					.getIpAddress());
+
+			boolean isRequestTransferSuccess = FileManager.TransferFile(
+					 currentSelectedServeur.getURL(),
+					files.get(info.position),"http://" + ip + ":" + msqi.getPort());
+
+			if (isRequestTransferSuccess) {
+				new AlertDialog.Builder(info.targetView.getContext())
+						.setIcon(android.R.drawable.ic_dialog_alert)
+						.setTitle("Transfert réussi")
+						.setMessage(
+								"Le fichier demandé à été transferer avec succès")
+						.setPositiveButton("OK", null).show();
+			}
+			return true;
+		case R.id.edit:
+			// edit stuff here
+			return true;
+		case R.id.delete:
+			// remove stuff here
+			return true;		
+		default:
+			return super.onContextItemSelected(item);
+		}
+	}
+
+	@Override
 	public void onActivityResult(int requestCode, int resultCode, Intent intent) {
 
 		if (requestCode == 0) {
@@ -205,7 +264,7 @@ public class MainActivity extends Activity implements
 				String contents = intent.getStringExtra("SCAN_RESULT");
 				String format = intent.getStringExtra("SCAN_RESULT_FORMAT");
 				Toast.makeText(this, contents, Toast.LENGTH_LONG).show();
-				//Add the last taken picture to the server
+				// Add the last taken picture to the server
 				ServerManager.getInstance().addServerFromCode(contents);
 
 			} else if (resultCode == RESULT_CANCELED) {
@@ -283,19 +342,17 @@ public class MainActivity extends Activity implements
 		if (id == R.id.action_settings) {
 			return true;
 		}
+		
 		return super.onOptionsItemSelected(item);
 	}
-	
+
 	@Override
 	protected void onSaveInstanceState(Bundle state) {
-	    super.onSaveInstanceState(state);
-	    
-	    if (ServerManager.getInstance().getServers().size() > 0)
-	    	Utils.SaveCurrentServers(settings);
+		super.onSaveInstanceState(state);
+
+		if (ServerManager.getInstance().getServers().size() > 0)
+			Utils.SaveCurrentServers(settings);
 	}
-
-
-
 
 	/**
 	 * A placeholder fragment containing a simple view.
@@ -314,13 +371,13 @@ public class MainActivity extends Activity implements
 		TextView pos = null;
 		Location instantLocation = null;
 		View rootView = null;
-		ArrayList<ServerObject> srvs = null;
+		
 
 		Activity fragmentActivity = null;
-		 int positionDansListe;
-		
+		int positionDansListe;
+
 		public static PlaceholderFragment newInstance(int sectionNumber) {
-			
+
 			section = sectionNumber;
 			PlaceholderFragment fragment = new PlaceholderFragment();
 			Bundle args = new Bundle();
@@ -336,45 +393,47 @@ public class MainActivity extends Activity implements
 		public View onCreateView(LayoutInflater inflater, ViewGroup container,
 				Bundle savedInstanceState) {
 
-			fragmentActivity =  this.getActivity();
-			
+			fragmentActivity = this.getActivity();
+
 			switch (section) {
-			//même view mais sur des fragments différentes avec des composants différents
-			
-			//fragment pour la liste des serveurs
+			// même view mais sur des fragments différentes avec des composants
+			// différents
+
+			// fragment pour la liste des serveurs
 			case 1:
 
 				rootView = inflater.inflate(R.layout.fragment_servers,
-						container, false);					
+						container, false);
 
 				srvs = ServerManager.getInstance().getServers();
 
 				generalListView = (ListView) rootView
 						.findViewById(R.id.serversView);
 				break;
-				//fragment pour la liste des fichiers d'un serveur actif
+			// fragment pour la liste des fichiers d'un serveur actif
 			case 2:
-				rootView = inflater.inflate(R.layout.fragment_files, 
-						container,	false);
+				rootView = inflater.inflate(R.layout.fragment_files, container,
+						false);
 				generalListView = (ListView) rootView
 						.findViewById(R.id.filesView);
-				
+
+				registerForContextMenu(generalListView);
+
 				break;
-				//fragment pour la position de l'appareil
+			// fragment pour la position de l'appareil
 			case 3:
-				
-					
+
 				rootView = inflater.inflate(R.layout.fragment_phone_position,
 						container, false);
 				break;
-				//fragment pour la communication bluetooth
+			// fragment pour la communication bluetooth
 			case 4:
 				rootView = inflater.inflate(R.layout.fragment_bluetooth,
 						container, false);
 
 				break;
-				//fragment pour la génération du code QR
-			case 5: 
+			// fragment pour la génération du code QR
+			case 5:
 				rootView = inflater.inflate(R.layout.fragment_qrcode,
 						container, false);
 				break;
@@ -395,41 +454,85 @@ public class MainActivity extends Activity implements
 		@Override
 		public void onActivityCreated(Bundle savedInstanceState) {
 			super.onActivityCreated(savedInstanceState);
-			
-		
 
 			switch (section) {
-			//liste des serveurs
-			case 1:				
-				//Load device Location
+			// liste des serveurs
+			case 1:
+				// Load device Location
 				instantLocation = Utils.GetDeviceLocation(fragmentActivity);
-			
-				 final ServerAdapter adapter = new ServerAdapter(
-							fragmentActivity, instantLocation,
-							srvs);
 
-			final Button btnSortUp = (Button) rootView.findViewById(R.id.redbtn);
-			btnSortUp.setOnClickListener( new OnClickListener() {
+				final ServerAdapter adapter = new ServerAdapter(
+						fragmentActivity, instantLocation, srvs);
+
+				final Button btnSortUp = (Button) rootView
+						.findViewById(R.id.redbtn);
+				btnSortUp.setOnClickListener(new OnClickListener() {
+
+					@Override
+					public void onClick(View v) {
+						PopupMenu popup = new PopupMenu(fragmentActivity.getBaseContext(), v);
+						 
+		                /** Adding menu items to the popumenu */
+		                popup.getMenuInflater().inflate(R.menu.menu_sort, popup.getMenu());
+		 
+		                /** Defining menu item click listener for the popup menu */
+		                popup.setOnMenuItemClickListener(new OnMenuItemClickListener() {
+		 
+		                    @Override
+		                    public boolean onMenuItemClick(MenuItem item) {
+		                    	
+		                    	switch (item.getItemId()){
+		                    	case R.id.sortByDistances :
+		                			if (sortAscendant == 1){
+		                				sortAscendant = 1 ;
+		                				Collections.sort(srvs,
+		                					new ServerObject.SortServerByDistance(true));
+		                			}
+		                			else {
+		                				sortAscendant = -1;
+		                			Collections.sort(srvs,
+		                					new ServerObject.SortServerByDistance(false));
+		                			}
+		                			return true;
+		                		case R.id.sortByName :
+		                			if (sortAscendant == 1){
+		                				sortAscendant = 1 ;
+		                				Collections.sort(srvs,
+		                						new ServerObject.SortServerByName(true));
+		                			}
+		                			else {
+		                				sortAscendant = -1;
+		                				Collections.sort(srvs,
+		                						new ServerObject.SortServerByName(false));
+		                			}
+		                			return true;
+		                		case R.id.sortByLastAccess :
+		                			if (sortAscendant == 1){
+		                				sortAscendant = 1 ;
+		                				Collections.sort(srvs,
+		                						new ServerObject.SortServerByLastAccessDate(true));
+		                			}
+		                			else {
+		                				sortAscendant = -1;
+		                				Collections.sort(srvs,
+		                						new ServerObject.SortServerByLastAccessDate(false));
+		                				}
+		                    	}
+		                    	
+		                        Toast.makeText(fragmentActivity, "You selected the action : " + item.getTitle(), Toast.LENGTH_SHORT).show();
+		                        
+		                        return true;
+		                    }
+		                });
+		 
+		                /** Showing the popup menu */
+		                popup.show();
+						adapter.notifyDataSetChanged();
+					}
+				});
 				
-				@Override
-				public void onClick(View v) {
-					Collections.sort(srvs, new ServerObject.SortServerByDistance(true));		
-					  
-					adapter.notifyDataSetChanged(); 
-				}
-			});
-			final Button btnSortDown = (Button) rootView.findViewById(R.id.btnSortDown);
-			btnSortDown.setOnClickListener( new OnClickListener() {
-				
-				@Override
-				public void onClick(View v) {
-					Collections.sort(srvs, new ServerObject.SortServerByDistance(false));	
-					
-					  adapter.notifyDataSetChanged(); 
-				}
-			});	
-				
-				generalListView.setAdapter(adapter);			
+
+				generalListView.setAdapter(adapter);
 
 				generalListView
 						.setOnItemClickListener(new OnItemClickListener() {
@@ -442,13 +545,15 @@ public class MainActivity extends Activity implements
 								currentSelectedServeur = (ServerObject) generalListView
 										.getAdapter().getItem(position);
 
-								 
-				               /*     FragmentTransaction ft = getFragmentManager().beginTransaction();
-				                    ft.replace(R.id.filesView, new FileListFragmentView());
-				                    ft.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE); 
-				                    ft.addToBackStack(null); 
-				                    ft.commit(); 
-				                    */
+								/*
+								 * FragmentTransaction ft =
+								 * getFragmentManager().beginTransaction();
+								 * ft.replace(R.id.filesView, new
+								 * FileListFragmentView());
+								 * ft.setTransition(FragmentTransaction
+								 * .TRANSIT_FRAGMENT_FADE);
+								 * ft.addToBackStack(null); ft.commit();
+								 */
 								AlertDialog.Builder builder = new Builder(view
 										.getContext());
 
@@ -471,56 +576,80 @@ public class MainActivity extends Activity implements
 														}
 													})
 											.setItems(
-													new String[] { "Voir liste de fichiers","Pair",
-															"Supprimer" },
+													new String[] {
+															"Voir liste de fichiers",
+															"Pair", "Supprimer" },
 													new DialogInterface.OnClickListener() {
 
 														@Override
 														public void onClick(
 																DialogInterface dialog,
 																int menuOption) {
-															
-													switch (menuOption){
-													case 0:														
-												//open file adapter
-													
-														 FragmentManager fragmentManager = fragmentActivity.getFragmentManager(); 
-													        fragmentManager.beginTransaction() 
-													                .replace(R.id.container, PlaceholderFragment.newInstance(2))
-													                .commit(); 
-													      //  mNavigationDrawerFragment.selectItem( 1 );
-														break;
-													case  1:
-														// open bluetooth if not open
-														break;
-													case 2:
-														//Message confiramtion
-														 new AlertDialog.Builder(generalListView.getContext())
-													        .setIcon(android.R.drawable.ic_dialog_alert)
-													        .setTitle("Supprimer serveur")
-													        .setMessage("Voulex-vous vraiment supprimer ce serveur?")
-													        .setPositiveButton("Oui", new DialogInterface.OnClickListener()
-													    { 
-													        @Override 
-													        public void onClick(DialogInterface dialog, int which) {
-													           // finish();    
-													        	if( which == -1){
-													        	
-													        	srvs.remove( positionDansListe );
-													        	adapter.notifyDataSetChanged();													     
-													     	    	
-													        	Utils.SaveCurrentServers(settings);
-													        	 
-													        	}
-													        } 
-													 
-													    }) 
-													    .setNegativeButton("Non", null)
-													    .show();
-														//delete servers from listView
-														//refresh adapater
-														break;
-													}
+
+															switch (menuOption) {
+															case 0:
+																// open file
+																// adapter
+
+																FragmentManager fragmentManager = fragmentActivity
+																		.getFragmentManager();
+																fragmentManager
+																		.beginTransaction()
+																		.replace(
+																				R.id.container,
+																				PlaceholderFragment
+																						.newInstance(2))
+																		.commit();
+																// mNavigationDrawerFragment.selectItem(
+																// 1 );
+																break;
+															case 1:
+																// open
+																// bluetooth if
+																// not open
+																break;
+															case 2:
+																// Message
+																// confiramtion
+																new AlertDialog.Builder(
+																		generalListView
+																				.getContext())
+																		.setIcon(
+																				android.R.drawable.ic_dialog_alert)
+																		.setTitle(
+																				"Supprimer serveur")
+																		.setMessage(
+																				"Voulex-vous vraiment supprimer ce serveur?")
+																		.setPositiveButton(
+																				"Oui",
+																				new DialogInterface.OnClickListener() {
+																					@Override
+																					public void onClick(
+																							DialogInterface dialog,
+																							int which) {
+																						// finish();
+																						if (which == -1) {
+
+																							srvs.remove(positionDansListe);
+																							adapter.notifyDataSetChanged();
+
+																							Utils.SaveCurrentServers(settings);
+
+																						}
+																					}
+
+																				})
+																		.setNegativeButton(
+																				"Non",
+																				null)
+																		.show();
+																// delete
+																// servers from
+																// listView
+																// refresh
+																// adapater
+																break;
+															}
 															// TODO
 															// Auto-generated
 															// method stub
@@ -535,9 +664,10 @@ public class MainActivity extends Activity implements
 														}
 													});
 								} else {
-									builder.setTitle("Ce serveur ne peut être pairé,\n car il est hors ligne")
-											//.setMessage(
-												//	"Ce serveur ne peut être pairé,\n car il est hors ligne")
+									builder.setTitle(
+											"Ce serveur ne peut être pairé,\n car il est hors ligne")
+											// .setMessage(
+											// "Ce serveur ne peut être pairé,\n car il est hors ligne")
 											.setNegativeButton(
 													R.string.cancel,
 													new DialogInterface.OnClickListener() {
@@ -549,58 +679,71 @@ public class MainActivity extends Activity implements
 														}
 
 													})
-													.setItems(
-															new String[] {"Supprimer" },
-															new DialogInterface.OnClickListener() {
+											.setItems(
+													new String[] { "Supprimer" },
+													new DialogInterface.OnClickListener() {
 
-																@Override
-																public void onClick(
-																		DialogInterface dialog,
-																		int menuOption) {
-																	
-															switch (menuOption){
-															case 0:														
-																//Message confiramtion
-																 new AlertDialog.Builder(generalListView.getContext())
-															        .setIcon(android.R.drawable.ic_dialog_alert)
-															        .setTitle("Supprimer serveur")
-															        .setMessage("Voulex-vous vraiment supprimer ce serveur?")
-															        .setPositiveButton("Oui", new DialogInterface.OnClickListener()
-															    { 
-															        @Override 
-															        public void onClick(DialogInterface dialog, int which) {
-															           // finish();    
-															        	if( which == -1){
-															        	
-															        	srvs.remove( positionDansListe );
-															        	adapter.notifyDataSetChanged();													     
-															     	    	
-															        	Utils.SaveCurrentServers(settings);
-															        	 
-															        	}
-															        } 
-															 
-															    }																
-															) 
-															    .setNegativeButton("Non", null)
-															    .show();
-																//delete servers from listView
-																//refresh adapater
+														@Override
+														public void onClick(
+																DialogInterface dialog,
+																int menuOption) {
+
+															switch (menuOption) {
+															case 0:
+																// Message
+																// confiramtion
+																new AlertDialog.Builder(
+																		generalListView
+																				.getContext())
+																		.setIcon(
+																				android.R.drawable.ic_dialog_alert)
+																		.setTitle(
+																				"Supprimer serveur")
+																		.setMessage(
+																				"Voulex-vous vraiment supprimer ce serveur?")
+																		.setPositiveButton(
+																				"Oui",
+																				new DialogInterface.OnClickListener() {
+																					@Override
+																					public void onClick(
+																							DialogInterface dialog,
+																							int which) {
+																						// finish();
+																						if (which == -1) {
+
+																							srvs.remove(positionDansListe);
+																							adapter.notifyDataSetChanged();
+
+																							Utils.SaveCurrentServers(settings);
+
+																						}
+																					}
+
+																				})
+																		.setNegativeButton(
+																				"Non",
+																				null)
+																		.show();
+																// delete
+																// servers from
+																// listView
+																// refresh
+																// adapater
 																break;
 															}
-																	// TODO
-																	// Auto-generated
-																	// method stub
-																	Toast.makeText(
+															// TODO
+															// Auto-generated
+															// method stub
+															Toast.makeText(
 
-																			fragmentActivity,
-																			dialog.toString()
-																					+ " has been click!",
-																			Toast.LENGTH_LONG)
-																			.show();
+																	fragmentActivity,
+																	dialog.toString()
+																			+ " has been click!",
+																	Toast.LENGTH_LONG)
+																	.show();
 
-																}
-															});
+														}
+													});
 								}
 
 								builder.create().show();
@@ -620,58 +763,53 @@ public class MainActivity extends Activity implements
 						});
 
 				break;
-				//listing des fichiers du serveur sélectionné
+			// listing des fichiers du serveur sélectionné
 			case 2:
-				if (currentSelectedServeur != null){					
-					
-					TextView txtServerName = (TextView) rootView.findViewById(R.id.textServerName);
-					txtServerName.setText( currentSelectedServeur.getServerName() );
-					String url = currentSelectedServeur.getURL() + "/getfilelist";
-					
-				
-			
-					currentSelectedServeur.setServerFiles( FileManager.getInstance().getFileFromServer( url ));
-					
-					 final FileAdapter fAdapt = new FileAdapter(
-								fragmentActivity, currentSelectedServeur);				
-					
-					
-					 generalListView.setAdapter(fAdapt);			
+				if (currentSelectedServeur != null) {
+
+					TextView txtServerName = (TextView) rootView
+							.findViewById(R.id.textServerName);
+
+					txtServerName.setText(currentSelectedServeur
+							.getServerName());
+					String url = currentSelectedServeur.getURL()
+							+ "getfilelist";
+
+					if (currentSelectedServeur.getServerFiles().size() != 0)
+						currentSelectedServeur.getServerFiles().clear();
+					else {
+						currentSelectedServeur.setServerFiles(FileManager
+								.getInstance().getFileFromServer(url));
+						files = currentSelectedServeur.getServerFiles();
+					}
+					final FileAdapter fAdapt = new FileAdapter(
+							fragmentActivity, currentSelectedServeur);
+
+					generalListView.setAdapter(fAdapt);
 
 				}
 				break;
-				//Affichage de la localisation
+			// Affichage de la localisation
 			case 3:
-				//Load Location
+				// Load Location
 				instantLocation = Utils.GetDeviceLocation(fragmentActivity);
-		
-				pos = (TextView) rootView.findViewById(R.id.location);			
+
+				pos = (TextView) rootView.findViewById(R.id.location);
 
 				pos.setText("Latitude: "
 						+ (double) Math.round(instantLocation.getLatitude() * 10000)
 						/ 10000
 						+ " Longitude: "
-						+ (double) Math.round(instantLocation
-								.getLongitude() * 10000) / 10000);
+						+ (double) Math.round(instantLocation.getLongitude() * 10000)
+						/ 10000);
 				break;
-				//Parti du bluetooth
+			// Parti du bluetooth
 			case 4:
 
-			
 				break;
-				//Generation du code QR
+			// Generation du code QR
 			case 5:
-				
-				MyServerNano msn = new MyServerNano();
-				MyServerQRInfo msqi = new MyServerQRInfo();
-				try {
-					msn.start();
-					msqi.setPort(msn.getListeningPort());
 
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
 				showCurrentQrCode(msqi, rootView);
 				break;
 			}
@@ -681,18 +819,17 @@ public class MainActivity extends Activity implements
 		public void onAttach(Activity activity) {
 			super.onAttach(activity);
 			((MainActivity) activity).onSectionAttached(getArguments().getInt(
-					ARG_SECTION_NUMBER));
+
+			ARG_SECTION_NUMBER));
 		}
-		
-		 // check network connection
-/*		public boolean isConnected() {
-			ConnectivityManager connMgr = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-			NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
-			if (networkInfo != null && networkInfo.isConnected())
-				return true;
-			else
-				return false;
-		}
-*/
+
+		// check network connection
+		/*
+		 * public boolean isConnected() { ConnectivityManager connMgr =
+		 * (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+		 * NetworkInfo networkInfo = connMgr.getActiveNetworkInfo(); if
+		 * (networkInfo != null && networkInfo.isConnected()) return true; else
+		 * return false; }
+		 */
 	}
 }

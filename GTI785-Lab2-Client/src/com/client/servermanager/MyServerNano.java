@@ -14,80 +14,83 @@ import com.client.activities.MainActivity;
 import com.client.utils.Utils;
 import com.client.utils.DeviceLocalisation;
 
-import fi.iki.elonen.NanoHTTPD;;
+import fi.iki.elonen.NanoHTTPD;
 
-public class MyServerNano extends NanoHTTPD{
+;
+
+public class MyServerNano extends NanoHTTPD {
 	/**
-     * logger to log to.
-     * 
-     * 
-     * 
-     */
-	
-	
-    private static final Logger LOG = Logger.getLogger(MyServerNano.class.getName());
+	 * logger to log to.
+	 * 
+	 * 
+	 * 
+	 */
 
-    public static void main(String[] args) {
-      //  ServerRunner.run(MyMediaServer.class);
-    }
+	private static final Logger LOG = Logger.getLogger(MyServerNano.class
+			.getName());
 
-    public MyServerNano() {
-        super(8080);
-    }
+	public static void main(String[] args) {
+		// ServerRunner.run(MyMediaServer.class);
+	}
 
-    public MyServerNano(String hostname, int port){
-    	super(hostname, port);
-    }
-    
-    
-    @Override
-    public Response serve(IHTTPSession session) {
-    	
-    	String response = "";
-        Method method = session.getMethod();
-        String uri = session.getUri();
-        Map<String, String> param = session.getParms();
-        
-        MyServerNano.LOG.info(method + " '" + uri + "' ");
-        
-        /*LinkedBlockingQueue<Object> lbq = new LinkedBlockingQueue<>();
-        try {
+	public MyServerNano() {
+		super(8080);
+	}
+
+	public MyServerNano(String hostname, int port) {
+		super(hostname, port);
+	}
+
+	@Override
+	public Response serve(IHTTPSession session) {
+
+		String response = "";
+		Method method = session.getMethod();
+		String uri = session.getUri();
+		Map<String, String> param = session.getParms();
+
+		MyServerNano.LOG.info(method + " '" + uri + "' ");
+
+		LinkedBlockingQueue<Object> lbq = new LinkedBlockingQueue<>();
+		try {
 			lbq.poll(5, TimeUnit.SECONDS);
 			lbq.put(method);
 		} catch (InterruptedException e) {
-		
-			MyServerNano.LOG.info( e.getMessage() );
+
+			MyServerNano.LOG.info(e.getMessage());
 			e.printStackTrace();
 		}
-		*/
-        
-        switch(uri){
-        
-        case HttpFunctions.GetFileList :  
-        	String files = Utils.GetFiles();
-        	response = files;
-        	break;  
-        case HttpFunctions.GetGeoPosition:    
-        
-        	Activity currentAct = MainActivity.getActivity();    
-        	Location serverLocation = Utils.GetDeviceLocation( currentAct );
-        	response = String.valueOf( serverLocation.getLongitude()) +"," + String.valueOf( serverLocation.getLatitude());
-        	
-        	break;
-        case HttpFunctions.TransferFile : 
-        	break;        	
-        case HttpFunctions.Pair: 
-        	break;
-        case HttpFunctions.UnPair : 
-        	break;        	
-        case "/notifications" : 
-        	response = "notifications";
-        	break;
-        case HttpFunctions.Status : 
-        	response = "success";
-        	break;
-        }        
-        return newFixedLengthResponse(response);    
-    }
+
+		switch (uri) {
+
+		case HttpFunctions.GetFileList:
+			String files = Utils.GetFiles();
+			response = files;
+			break;
+		case HttpFunctions.GetGeoPosition:
+
+			Activity currentAct = MainActivity.getActivity();
+			Location serverLocation = Utils.GetDeviceLocation(currentAct);
+			response = String.valueOf(serverLocation.getLongitude()) + ","
+					+ String.valueOf(serverLocation.getLatitude());
+
+			break;
+		case HttpFunctions.TransferFile:
+			Utils.DownloadFileIntoDevice(param.get("payload"));
+			response = "transfert debutertersz";
+			break;
+		case HttpFunctions.Pair:
+			break;
+		case HttpFunctions.UnPair:
+			break;
+		case "/notifications":
+			response = "notifications";
+			break;
+		case HttpFunctions.Status:
+			response = "success";
+			break;
+		}
+		return newFixedLengthResponse(response);
+	}
 
 }

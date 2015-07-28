@@ -23,6 +23,12 @@
     <string name="startDistance">0 km</string>
     <string name="filesize">0 kb</string>
     <string name="activatebluetooth">Activer le bluetooth</string>
+    <string name="transfert">Transférer</string>
+    <string name="menu_edit">Editer</string>
+    <string name="menu_delete">Supprimer</string>
+    <string name="byDistance">Par distance</string>
+    <string name="byName">Nom</string>
+    <string name="byLast">Dernier accès</string>
     
 
 </resources>

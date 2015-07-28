@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content"
@@ -21,26 +20,25 @@
             android:id="@+id/list_image"
             android:layout_width="50dip"
             android:layout_height="50dip"
-            android:contentDescription="@string/servername"
-            android:src="@drawable/server_small" />
+            android:contentDescription="@string/fileName"
+            android:src="@drawable/fileico"
+            android:background="@null" />
     </LinearLayout>
 
     <TextView
-        android:id="@+id/serverName"
+        android:id="@+id/filename"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignTop="@+id/thumbnail"
         android:layout_toEndOf="@+id/thumbnail"
-        android:layout_toLeftOf="@+id/toggle"
         android:textColor="#040404"
         android:textSize="15sp"
         android:textStyle="bold"
         android:typeface="sans" >
-
     </TextView>
 
     <TextView
-        android:id="@+id/serverUrl"
+        android:id="@+id/filepath"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignBottom="@+id/thumbnail"
@@ -51,41 +49,14 @@
         android:typeface="sans" >
     </TextView>
 
-    <ImageView
-        android:id="@+id/imageView1"
-        android:contentDescription="@string/servername"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentEnd="true"
-        android:layout_centerVertical="true"
-        android:src="@drawable/arrow" />
-
-    <LinearLayout
-        android:id="@+id/toggle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentStart="false"
-        android:layout_alignTop="@+id/serverName"
-        android:layout_marginEnd="36dip"      
-        android:layout_toStartOf="@+id/imageView1"
-        android:background="@drawable/imag_bg"
-        android:padding="3dip" >
-
-        <ToggleButton
-            android:id="@+id/toggleButton1"
-            android:layout_width="wrap_content"
-            android:layout_height="32dp"
-            android:focusable="false" />
-
-    </LinearLayout>
-
     <TextView
-        android:id="@+id/serverDistance"
+        android:id="@+id/fileSize"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignBottom="@+id/serverUrl"
-        android:layout_toStartOf="@+id/imageView1"
-        android:text="@string/startDistance"
+        android:layout_alignBottom="@+id/filepath"
+        android:layout_alignParentRight="true"
+        android:layout_marginRight="15dp"
+        android:text="@string/filesize"
         android:textAppearance="?android:attr/textAppearanceSmall"
         android:textStyle="italic" />
 

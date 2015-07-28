@@ -102,9 +102,13 @@ public class ServerObject {
 	} 
 
 	public static class SortServerByName implements Comparator<ServerObject> {
+	    private int mod = 1; 
+		public SortServerByName(boolean desc) {
+		        if (desc) mod =-1;        
+		    }
 		@Override
 		public int compare(ServerObject lhs, ServerObject rhs) {		
-			return lhs.getServerName().compareTo( rhs.getServerName() );
+			return mod * lhs.getServerName().compareTo( rhs.getServerName() );
 		}
 	 
 	}

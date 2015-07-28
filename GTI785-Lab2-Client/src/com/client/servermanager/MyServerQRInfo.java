@@ -2,6 +2,7 @@ package com.client.servermanager;
 
 import android.graphics.Bitmap;
 import android.location.Location;
+import android.os.Build;
 
 import java.net.InetAddress;
 import java.net.NetworkInterface;
@@ -65,7 +66,7 @@ public class MyServerQRInfo {
 			
 			 setAddress( getCurrentIpAddress().get(0) );
 			
-			BitMatrix byteMatrix = qrCodeWriter.encode( getAddress() +","+ port+ ",MonServeur",BarcodeFormat.QR_CODE, 750, 750, hintMap);
+			BitMatrix byteMatrix = qrCodeWriter.encode( getAddress() +","+ port+ ","+ Build.MODEL ,BarcodeFormat.QR_CODE, 750, 750, hintMap);
 			
 			
 			//Comme c un carré on peut juste utiliser la longueur

@@ -78,7 +78,7 @@ public class ServerAdapter extends ArrayAdapter<ServerObject> {
 
 		// On vérifie le status
 		String url = "http://" + srv2.getServerIPAdress() + ":"
-				+ srv2.getServerPort() + "/" + "status";
+				+ srv2.getServerPort() + "/status";
 
 		srv2.setAvailable(ServerManager.getStatusOfServer(url));
 
