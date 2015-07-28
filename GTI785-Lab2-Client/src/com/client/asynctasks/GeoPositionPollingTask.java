@@ -82,8 +82,8 @@ public class GeoPositionPollingTask extends AsyncTask<String, String, Location> 
 					locationFromResponse +=  sResponse;
 				}
 				
-				double latitude  = Double.parseDouble( locationFromResponse.trim().split(";")[0] );
-				double longitude = Double.parseDouble( locationFromResponse.trim().split(";")[1] );
+				double longitude  = Double.parseDouble( locationFromResponse.trim().split(",")[0] );
+				double latitude = Double.parseDouble( locationFromResponse.trim().split(",")[1] );
 				
 				Location locServer =  new Location("server");
 				locServer.setLatitude( latitude );

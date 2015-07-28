@@ -45,7 +45,7 @@ public class ServerAdapter extends ArrayAdapter<ServerObject> {
 
 	}
 
-	// @Override
+	 @Override
 	public View getView(int position, View convertView, ViewGroup parent) {
 
 		// to fix when adding a new server

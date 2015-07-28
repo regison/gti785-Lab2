@@ -7,6 +7,9 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.logging.Logger;
 
+import com.client.filemanager.File;
+import com.client.filemanager.FileAdapter;
+import com.client.filemanager.FileManager;
 import com.client.gti785_lab2.R;
 import com.client.servermanager.ServerAdapter;
 import com.client.servermanager.ServerManager;
@@ -67,7 +70,7 @@ public class MainActivity extends Activity implements
 	 * Fragment managing the behaviors, interactions and presentation of the
 	 * navigation drawer.
 	 */
-	private NavigationDrawerFragment mNavigationDrawerFragment;
+	private static NavigationDrawerFragment mNavigationDrawerFragment;
 
 	/**
 	 * Used to store the last screen title. For use in
@@ -80,6 +83,7 @@ public class MainActivity extends Activity implements
 	private int sectionId;
 	private static SharedPreferences settings;
 	private static ListView generalListView;
+	private static ServerObject currentSelectedServeur;
 
 
 	private static Activity generalActivity = null;
@@ -352,9 +356,14 @@ public class MainActivity extends Activity implements
 			case 2:
 				rootView = inflater.inflate(R.layout.fragment_files, 
 						container,	false);
+				generalListView = (ListView) rootView
+						.findViewById(R.id.filesView);
+				
 				break;
 				//fragment pour la position de l'appareil
 			case 3:
+				
+					
 				rootView = inflater.inflate(R.layout.fragment_phone_position,
 						container, false);
 				break;
@@ -430,7 +439,7 @@ public class MainActivity extends Activity implements
 									View view, int position, long id) {
 
 								positionDansListe = position;
-								ServerObject currentSrv = (ServerObject) generalListView
+								currentSelectedServeur = (ServerObject) generalListView
 										.getAdapter().getItem(position);
 
 								 
@@ -443,8 +452,8 @@ public class MainActivity extends Activity implements
 								AlertDialog.Builder builder = new Builder(view
 										.getContext());
 
-								if (currentSrv != null
-										&& currentSrv.isAvailable()) {
+								if (currentSelectedServeur != null
+										&& currentSelectedServeur.isAvailable()) {
 
 									builder.setTitle("Choisissez une action")
 											.setNegativeButton(
@@ -474,6 +483,12 @@ public class MainActivity extends Activity implements
 													switch (menuOption){
 													case 0:														
 												//open file adapter
+													
+														 FragmentManager fragmentManager = fragmentActivity.getFragmentManager(); 
+													        fragmentManager.beginTransaction() 
+													                .replace(R.id.container, PlaceholderFragment.newInstance(2))
+													                .commit(); 
+													      //  mNavigationDrawerFragment.selectItem( 1 );
 														break;
 													case  1:
 														// open bluetooth if not open
@@ -607,7 +622,23 @@ public class MainActivity extends Activity implements
 				break;
 				//listing des fichiers du serveur sélectionné
 			case 2:
+				if (currentSelectedServeur != null){					
+					
+					TextView txtServerName = (TextView) rootView.findViewById(R.id.textServerName);
+					txtServerName.setText( currentSelectedServeur.getServerName() );
+					String url = currentSelectedServeur.getURL() + "/getfilelist";
+					
+				
+			
+					currentSelectedServeur.setServerFiles( FileManager.getInstance().getFileFromServer( url ));
+					
+					 final FileAdapter fAdapt = new FileAdapter(
+								fragmentActivity, currentSelectedServeur);				
+					
+					
+					 generalListView.setAdapter(fAdapt);			
 
+				}
 				break;
 				//Affichage de la localisation
 			case 3:

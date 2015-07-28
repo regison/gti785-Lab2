@@ -1,10 +1,8 @@
 package com.client.utils;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
-
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import android.app.Activity;
 import android.content.Context;
@@ -14,6 +12,7 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.provider.Settings;
 import android.provider.Settings.SettingNotFoundException;
 import android.text.TextUtils;
@@ -252,6 +251,26 @@ public class Utils {
 
 		// Commit the edits!
 		editor.commit();
+	}
+
+	public static String GetFiles() {
+		// TODO Auto-generated method stub
+		File root = new File(Environment.DIRECTORY_DOWNLOADS);
+		String sFiles = null;
+		final File[] files =  root.listFiles();
+		
+		for(File f : files){
+
+			if (f.isFile()){
+				if (files.length == 1)
+				sFiles = f.getAbsolutePath();
+				else
+					sFiles += f.getAbsolutePath() +",";			
+			}
+		}
+			
+		
+		return sFiles;
 	}
 
 }

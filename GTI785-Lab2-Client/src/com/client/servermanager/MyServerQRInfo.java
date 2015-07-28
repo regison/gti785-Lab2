@@ -62,9 +62,7 @@ public class MyServerQRInfo {
 			hintMap.put(EncodeHintType.ERROR_CORRECTION, ErrorCorrectionLevel.L);
 
 			QRCodeWriter qrCodeWriter = new QRCodeWriter();
-			if (getCurrentIpAddress().get(0).equals("192.168.56.101"))
-				 setAddress( "10.0.3.15" );
-			else
+			
 			 setAddress( getCurrentIpAddress().get(0) );
 			
 			BitMatrix byteMatrix = qrCodeWriter.encode( getAddress() +","+ port+ ",MonServeur",BarcodeFormat.QR_CODE, 750, 750, hintMap);

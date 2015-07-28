@@ -64,13 +64,14 @@ public class MyServerNano extends NanoHTTPD{
         switch(uri){
         
         case HttpFunctions.GetFileList :  
-        	response = param.size() + "" ;
+        	String files = Utils.GetFiles();
+        	response = files;
         	break;  
         case HttpFunctions.GetGeoPosition:    
         
         	Activity currentAct = MainActivity.getActivity();    
         	Location serverLocation = Utils.GetDeviceLocation( currentAct );
-        	response = String.valueOf( serverLocation.getLatitude()) +";" + String.valueOf( serverLocation.getLongitude());
+        	response = String.valueOf( serverLocation.getLongitude()) +"," + String.valueOf( serverLocation.getLatitude());
         	
         	break;
         case HttpFunctions.TransferFile : 

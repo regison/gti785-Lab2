@@ -19,7 +19,9 @@
     <string name="ipadress">Adresse courante de l\'appareil:</string>
     <string name="cancel">Annuler</string>
     <string name="servername">Nom du serveur</string>
+    <string name="fileName">Nom du fichier</string>
     <string name="startDistance">0 km</string>
+    <string name="filesize">0 kb</string>
     <string name="activatebluetooth">Activer le bluetooth</string>
     
 
